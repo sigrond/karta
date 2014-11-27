@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="author" content="Tomasz Jakubczyk" />
+    <script src="jquery-2.1.1.min.js"></script>
+    <script src="https://www.dropbox.com/static/api/dropbox-datastores-1.1-latest.js" type="text/javascript"></script>
+</head>
+<body>
+    test
+<script>
+var client = new Dropbox.Client({key: "yz2ozbqwxlxd3lz"});
+
+client.authenticate({interactive: true}, function (error) {
+    if (error) {
+        alert('Authentication error: ' + error);
+    }
+});
+
+client.authenticate();
+
+var datastoreManager = client.getDatastoreManager();
+datastoreManager.openDefaultDatastore(function (error, datastore) {
+    if (error) {
+        alert('Error opening default datastore: ' + error);
+    }
+    var statsTable = datastore.getTable('stats');
+    var results = statsTable.query();
+    for(var i=0;i<results.length;i++)
+    {
+        alert(String(results[i]));
+        results[i].deleteRecord();
+    }
+});
+</script>
+</body>
+</html>

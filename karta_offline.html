@@ -1,0 +1,3454 @@
+<!DOCTYPE html>
+<html manifest="cache.manifest">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="author" content="Tomasz Jakubczyk">
+    <meta name="description" content="Karta Postaci Warhammer RPG z możliwością synchronizacji z dropboxem oraz trybem offline">
+    <title>Karta Postaci Warhammer</title>
+    <script src="jquery-2.1.1.min.js"></script>
+    <script src="https://www.dropbox.com/static/api/dropbox-datastores-1.1-latest.js" type="text/javascript"></script>
+    <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="yz2ozbqwxlxd3lz"></script>
+    <style>
+        #s1
+        {
+            background-image: url("str1.jpg");
+            background-size: 991px 1391px;
+            background-repeat: no-repeat;
+            width: 991px;
+            height: 1391px;
+        }
+        #s2
+        {
+            background-image: url("str2.jpg");
+            background-size: 991px 1391px;
+            background-repeat: no-repeat;
+            width: 991px;
+            height: 1391px;
+        }
+        #s3
+        {
+            background-image: url("str3.jpg");
+            background-size: 991px 1391px;
+            background-repeat: no-repeat;
+            width: 991px;
+            height: 1391px;
+        }
+
+        form input
+        {
+            background-color: transparent !important;
+            border: 0px solid;
+            font-family: "Comic Sans MS", cursive, sans-serif;
+        }
+        form input:focus
+        {
+            outline:none;
+        }
+        form #s1 input[type=checkbox]
+        {
+            /*-ms-transform: scale(0.5);*/ /* IE */
+            -moz-transform: scale(0.75); /* FF */
+            /*-webkit-transform: scale(0.5);*/ /* Safari and Chrome */
+            /*-o-transform: scale(0.5);*/ /* Opera */
+            padding: 0px;
+            width: 8px;
+            font-size: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div style="position: absolute; left: 0px; top: 0px;">
+        <input type=button value="reload" onclick="window.location.reload(true);"></input>
+    </div>
+    <div style="position: absolute; left: 100px; top: 0px;">
+        ver. 0.98 18 VIII 2014 14:57
+    </div>
+    <div style="position: absolute; left: 400px; top: 0px;">
+            <progress value="1" max="100" style="width: 200px;" id="loadprogress"></progress>
+        </div>
+    <div style="position: absolute; left: 800px; top: 15px; width: 200px; color: yellow;" id="status">
+        status:
+    </div>
+    <div style="position: absolute; left: 800px; top: 35px;">
+        <input type=button id="wyloguj" style="width: 200px;" value="Resetuj połączenie dropboxa"></input>
+    </div>
+    <div style="position: absolute; left: 800px; top: 60px;">
+        <input type=button id="i0" style="width: 200px;" value="Pobierz z database dropboxa"></input>
+    </div>
+    <div style="position: absolute; left: 800px; top: 85px;">
+        <input type=button id="eksport" style="width: 200px;" value="Eksport do pliku"></input>
+        <!--<br/><a id="export" class="myButton" download="" href="#">export</a>-->
+    </div>
+    <div style="position: absolute; left: 800px; top: 115px;">
+        <div style="display: block; width: 200px; height: 20px; overflow: hidden;">
+        <button style="width: 210px; height: 30px; position: relative; top: -5px; left: -5px;"><a href="javascript: void(0)">Import z pliku</a></button>
+        <input type="file" id="upload_input" name="upload" style="font-size: 50px; width: 220px; opacity: 0; filter:alpha(opacity: 0);  position: relative; top: -40px;; left: -20px" />
+        </div>
+    </div>
+    <div style="position: absolute; left: 800px; top: 140px;">
+        <div style="display: block; width: 200px; height: 20px; overflow: hidden;">
+        <a  href="javascript: void(0);" class="dropbox-saver" style="width: 190px; height: 30px; position: relative;"></a>
+        <input type=button id="SaveToDropbox" style="font-size: 50px; width: 220px; opacity: 0; filter:alpha(opacity: 0);  position: relative; top: -40px;; left: -20px" />
+        </div>
+    </div>
+    <div id="ChooseFromDropbox" style="position: absolute; left: 800px; top: 165px;">
+        <!--tu idzie dropbox chooser-->
+    </div>
+    <div style="position: absolute; left: 800px; top: 190px;">
+        <input type=button id="zapisz" style="width: 200px;" value="Zapisz"></input>
+    </div>
+    <form><div id="s1">
+        <div style="position: absolute; left: 95px; top: 117px;">
+            <input type=text id="i1" style="width: 390px;" value="Imię"></input>
+        </div>
+        <div style="position: absolute; left: 95px; top: 140px;">
+            <input type=text id="i2" style="width: 390px;" value="rasa" list="rasy"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 160px;">
+            <input type=text id="i3" style="width: 310px;" value="obecna profesja" list="profesje"></input>
+        </div>
+        <div style="position: absolute; left: 200px; top: 185px;">
+            <input type=text id="i4" style="width: 280px;" value="poprzednia profesja" list="profesje"></input>
+        </div>
+        <div style="position: absolute; left: 200px; top: 210px;">
+            <input type=text id="i5" style="width: 280px;" value="profesje wyjściowe" list="profesje"></input>
+        </div>
+        <div style="position: absolute; left: 90px; top: 308px;">
+            <input type=text id="i6" style="width: 170px;" value="Płeć" list="l3"></input>
+        </div>
+        <div style="position: absolute; left: 320px; top: 308px;">
+            <input type=text id="i7" style="width: 170px;" value="wiek"></input>
+        </div>
+        <div style="position: absolute; left: 160px; top: 330px;">
+            <input type=text id="i8" style="width: 100px;" value="data urodzenia"></input>
+        </div>
+        <div style="position: absolute; left: 380px; top: 330px;">
+            <input type=text id="i9" style="width: 100px;" value="znak gwiezdny" list="l4"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 352px;">
+            <input type=text id="i10" style="width: 100px;" value="miejsce urodzenia" list="l5"></input>
+        </div>
+        <div style="position: absolute; left: 360px; top: 352px;">
+            <input type=text id="i11" style="width: 120px;" value="pochodzenie"></input>
+        </div>
+        <div style="position: absolute; left: 120px; top: 375px;">
+            <input type=text id="i12" style="width: 130px;" value="wzrost"></input>
+        </div>
+        <div style="position: absolute; left: 320px; top: 375px;">
+            <input type=text id="i13" style="width: 140px;" value="waga"></input>
+        </div>
+        <div style="position: absolute; left: 100px; top: 398px;">
+            <input type=text id="i14" style="width: 160px;" value="oczy" list="kolory"></input>
+        </div>
+        <div style="position: absolute; left: 330px; top: 398px;">
+            <input type=text id="i15" style="width: 150px;" value="wlosy" list="wlosy"></input>
+        </div>
+        <div style="position: absolute; left: 180px; top: 420px;">
+            <input type=text id="i16" style="width: 300px;" value="znaki szczegóulne" list="l8"></input>
+        </div>
+        <div style="position: absolute; left: 135px; top: 540px;">
+            <input type=text id="i17" style="width: 30px;" value="WW"></input>
+        </div>
+        <div style="position: absolute; left: 180px; top: 540px;">
+            <input type=text id="i18" style="width: 30px;" value="US"></input>
+        </div>
+        <div style="position: absolute; left: 220px; top: 540px;">
+            <input type=text id="i19" style="width: 30px;" value="K"></input>
+        </div>
+        <div style="position: absolute; left: 265px; top: 540px;">
+            <input type=text id="i20" style="width: 30px;" value="odp"></input>
+        </div>
+        <div style="position: absolute; left: 310px; top: 540px;">
+            <input type=text id="i21" style="width: 30px;" value="zr"></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 540px;">
+            <input type=text id="i22" style="width: 30px;" value="int"></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 540px;">
+            <input type=text id="i23" style="width: 30px;" value="sw"></input>
+        </div>
+        <div style="position: absolute; left: 440px; top: 540px;">
+            <input type=text id="i24" style="width: 30px;" value="ogd"></input>
+        </div>
+        <div style="position: absolute; left: 135px; top: 565px;">
+            <input type=text id="i25" style="width: 30px;" value="WW"></input>
+        </div>
+        <div style="position: absolute; left: 180px; top: 565px;">
+            <input type=text id="i26" style="width: 30px;" value="US"></input>
+        </div>
+        <div style="position: absolute; left: 220px; top: 565px;">
+            <input type=text id="i27" style="width: 30px;" value="K"></input>
+        </div>
+        <div style="position: absolute; left: 265px; top: 565px;">
+            <input type=text id="i28" style="width: 30px;" value="odp"></input>
+        </div>
+        <div style="position: absolute; left: 310px; top: 565px;">
+            <input type=text id="i29" style="width: 30px;" value="zr"></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 565px;">
+            <input type=text id="i30" style="width: 30px;" value="int"></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 565px;">
+            <input type=text id="i31" style="width: 30px;" value="sw"></input>
+        </div>
+        <div style="position: absolute; left: 440px; top: 565px;">
+            <input type=text id="i32" style="width: 30px;" value="ogd"></input>
+        </div>
+        <div style="position: absolute; left: 135px; top: 585px;">
+            <input type=text id="i33" style="width: 30px;" value="WW"></input>
+        </div>
+        <div style="position: absolute; left: 180px; top: 585px;">
+            <input type=text id="i34" style="width: 30px;" value="US"></input>
+        </div>
+        <div style="position: absolute; left: 220px; top: 585px;">
+            <input type=text id="i35" style="width: 30px;" value="K"></input>
+        </div>
+        <div style="position: absolute; left: 265px; top: 585px;">
+            <input type=text id="i36" style="width: 30px;" value="odp"></input>
+        </div>
+        <div style="position: absolute; left: 310px; top: 585px;">
+            <input type=text id="i37" style="width: 30px;" value="zr"></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 585px;">
+            <input type=text id="i38" style="width: 30px;" value="int"></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 585px;">
+            <input type=text id="i39" style="width: 30px;" value="sw"></input>
+        </div>
+        <div style="position: absolute; left: 440px; top: 585px;">
+            <input type=text id="i40" style="width: 30px;" value="ogd"></input>
+        </div>
+        <div style="position: absolute; left: 135px; top: 675px;">
+            <input type=text id="i41" style="width: 30px;" value="a"></input>
+        </div>
+        <div style="position: absolute; left: 180px; top: 675px;">
+            <input type=text id="i42" style="width: 30px;" value="zyw"></input>
+        </div>
+        <div style="position: absolute; left: 220px; top: 675px;">
+            <input type=text id="i43" style="width: 30px;" value="s"></input>
+        </div>
+        <div style="position: absolute; left: 265px; top: 675px;">
+            <input type=text id="i44" style="width: 30px;" value="wt"></input>
+        </div>
+        <div style="position: absolute; left: 310px; top: 675px;">
+            <input type=text id="i45" style="width: 30px;" value="sz"></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 675px;">
+            <input type=text id="i46" style="width: 30px;" value="mag"></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 675px;">
+            <input type=text id="i47" style="width: 30px;" value="po"></input>
+        </div>
+        <div style="position: absolute; left: 440px; top: 675px;">
+            <input type=text id="i48" style="width: 30px;" value="pp"></input>
+        </div>
+        <div style="position: absolute; left: 135px; top: 695px;">
+            <input type=text id="i49" style="width: 30px;" value="WW"></input>
+        </div>
+        <div style="position: absolute; left: 180px; top: 695px;">
+            <input type=text id="i50" style="width: 30px;" value="US"></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 695px;">
+            <input type=text id="i51" style="width: 30px;" value="int"></input>
+        </div>
+        <div style="position: absolute; left: 135px; top: 715px;">
+            <input type=text id="i52" style="width: 30px;" value="WW"></input>
+        </div>
+        <div style="position: absolute; left: 180px; top: 715px;">
+            <input type=text id="i53" style="width: 30px;" value="US"></input>
+        </div>
+        <div style="position: absolute; left: 220px; top: 715px;">
+            <input type=text id="i54" style="width: 30px;" value="K"></input>
+        </div>
+        <div style="position: absolute; left: 265px; top: 715px;">
+            <input type=text id="i55" style="width: 30px;" value="odp"></input>
+        </div>
+        <div style="position: absolute; left: 310px; top: 715px;">
+            <input type=text id="i56" style="width: 30px;" value="zr"></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 715px;">
+            <input type=text id="i57" style="width: 30px;" value="int"></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 715px;">
+            <input type=text id="i58" style="width: 30px;" value="sw"></input>
+        </div>
+        <div style="position: absolute; left: 440px; top: 715px;">
+            <input type=text id="i59" style="width: 30px;" value="ogd"></input>
+        </div>
+        <div style="position: absolute; left: 50px; top: 870px;">
+            <input type=text id="i60" style="width: 120px;" list="bronie"></input>
+        </div>
+        <div style="position: absolute; left: 176px; top: 870px;">
+            <input type=text id="i61" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 220px; top: 870px;">
+            <input type=text id="i62" style="width: 85px;"></input>
+        </div>
+        <div style="position: absolute; left: 320px; top: 870px;">
+            <input type=text id="i63" style="width: 60px;"></input>
+        </div>
+        <div style="position: absolute; left: 396px; top: 870px;">
+            <input type=text id="i64" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 440px; top: 870px;">
+            <input type=text id="i65" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 100px; top: 890px;">
+            <input type=text id="i66" style="width: 210px;"></input>
+        </div>
+        <div style="position: absolute; left: 332px; top: 888px;">
+            <input type=checkbox id="i67" value=0></input>
+        </div>
+        <div style="position: absolute; left: 341px; top: 888px;">
+            <input type=checkbox id="i68" value=0></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 888px;">
+            <input type=checkbox id="i69" value=0></input>
+        </div>
+        <div style="position: absolute; left: 359px; top: 888px;">
+            <input type=checkbox id="i70" value=0></input>
+        </div>
+        <div style="position: absolute; left: 368px; top: 888px;">
+            <input type=checkbox id="i71" value=0></input>
+        </div>
+        <div style="position: absolute; left: 382px; top: 888px;">
+            <input type=checkbox id="i72" value=0></input>
+        </div>
+        <div style="position: absolute; left: 391px; top: 888px;">
+            <input type=checkbox id="i73" value=0></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 888px;">
+            <input type=checkbox id="i74" value=0></input>
+        </div>
+        <div style="position: absolute; left: 409px; top: 888px;">
+            <input type=checkbox id="i75" value=0></input>
+        </div>
+        <div style="position: absolute; left: 418px; top: 888px;">
+            <input type=checkbox id="i76" value=0></input>
+        </div>
+        <div style="position: absolute; left: 432px; top: 888px;">
+            <input type=checkbox id="i77" value=0></input>
+        </div>
+        <div style="position: absolute; left: 441px; top: 888px;">
+            <input type=checkbox id="i78" value=0></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 888px;">
+            <input type=checkbox id="i79" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 888px;">
+            <input type=checkbox id="i80" value=0></input>
+        </div>
+        <div style="position: absolute; left: 468px; top: 888px;">
+            <input type=checkbox id="i90" value=0></input>
+        </div>
+        <div style="position: absolute; left: 332px; top: 898px;">
+            <input type=checkbox id="i91" value=0></input>
+        </div>
+        <div style="position: absolute; left: 341px; top: 898px;">
+            <input type=checkbox id="i92" value=0></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 898px;">
+            <input type=checkbox id="i93" value=0></input>
+        </div>
+        <div style="position: absolute; left: 359px; top: 898px;">
+            <input type=checkbox id="i94" value=0></input>
+        </div>
+        <div style="position: absolute; left: 368px; top: 898px;">
+            <input type=checkbox id="i95" value=0></input>
+        </div>
+        <div style="position: absolute; left: 382px; top: 898px;">
+            <input type=checkbox id="i96" value=0></input>
+        </div>
+        <div style="position: absolute; left: 391px; top: 898px;">
+            <input type=checkbox id="i97" value=0></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 898px;">
+            <input type=checkbox id="i98" value=0></input>
+        </div>
+        <div style="position: absolute; left: 409px; top: 898px;">
+            <input type=checkbox id="i99" value=0></input>
+        </div>
+        <div style="position: absolute; left: 418px; top: 898px;">
+            <input type=checkbox id="i100" value=0></input>
+        </div>
+        <div style="position: absolute; left: 432px; top: 898px;">
+            <input type=checkbox id="i101" value=0></input>
+        </div>
+        <div style="position: absolute; left: 441px; top: 898px;">
+            <input type=checkbox id="i102" value=0></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 898px;">
+            <input type=checkbox id="i103" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 898px;">
+            <input type=checkbox id="i104" value=0></input>
+        </div>
+        <div style="position: absolute; left: 468px; top: 898px;">
+            <input type=checkbox id="i105" value=0></input>
+        </div>
+        <div style="position: absolute; left: 50px; top: 936px;">
+            <input type=text id="i106" style="width: 120px;" list="bronie"></input>
+        </div>
+        <div style="position: absolute; left: 176px; top: 936px;">
+            <input type=text id="i107" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 220px; top: 936px;">
+            <input type=text id="i108" style="width: 85px;"></input>
+        </div>
+        <div style="position: absolute; left: 320px; top: 936px;">
+            <input type=text id="i109" style="width: 60px;"></input>
+        </div>
+        <div style="position: absolute; left: 396px; top: 936px;">
+            <input type=text id="i110" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 440px; top: 936px;">
+            <input type=text id="i111" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 100px; top: 956px;">
+            <input type=text id="i112" style="width: 210px;"></input>
+        </div>
+        <div style="position: absolute; left: 332px; top: 954px;">
+            <input type=checkbox id="i113" value=0></input>
+        </div>
+        <div style="position: absolute; left: 341px; top: 954px;">
+            <input type=checkbox id="i114" value=0></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 954px;">
+            <input type=checkbox id="i115" value=0></input>
+        </div>
+        <div style="position: absolute; left: 359px; top: 954px;">
+            <input type=checkbox id="i116" value=0></input>
+        </div>
+        <div style="position: absolute; left: 368px; top: 954px;">
+            <input type=checkbox id="i117" value=0></input>
+        </div>
+        <div style="position: absolute; left: 382px; top: 954px;">
+            <input type=checkbox id="i118" value=0></input>
+        </div>
+        <div style="position: absolute; left: 391px; top: 954px;">
+            <input type=checkbox id="i119" value=0></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 954px;">
+            <input type=checkbox id="i120" value=0></input>
+        </div>
+        <div style="position: absolute; left: 409px; top: 954px;">
+            <input type=checkbox id="i121" value=0></input>
+        </div>
+        <div style="position: absolute; left: 418px; top: 954px;">
+            <input type=checkbox id="i122" value=0></input>
+        </div>
+        <div style="position: absolute; left: 432px; top: 954px;">
+            <input type=checkbox id="i123" value=0></input>
+        </div>
+        <div style="position: absolute; left: 441px; top: 954px;">
+            <input type=checkbox id="i124" value=0></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 954px;">
+            <input type=checkbox id="i125" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 954px;">
+            <input type=checkbox id="i126" value=0></input>
+        </div>
+        <div style="position: absolute; left: 468px; top: 954px;">
+            <input type=checkbox id="i127" value=0></input>
+        </div>
+        <div style="position: absolute; left: 332px; top: 964px;">
+            <input type=checkbox id="i128" value=0></input>
+        </div>
+        <div style="position: absolute; left: 341px; top: 964px;">
+            <input type=checkbox id="i129" value=0></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 964px;">
+            <input type=checkbox id="i130" value=0></input>
+        </div>
+        <div style="position: absolute; left: 359px; top: 964px;">
+            <input type=checkbox id="i131" value=0></input>
+        </div>
+        <div style="position: absolute; left: 368px; top: 964px;">
+            <input type=checkbox id="i132" value=0></input>
+        </div>
+        <div style="position: absolute; left: 382px; top: 964px;">
+            <input type=checkbox id="i133" value=0></input>
+        </div>
+        <div style="position: absolute; left: 391px; top: 964px;">
+            <input type=checkbox id="i134" value=0></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 964px;">
+            <input type=checkbox id="i135" value=0></input>
+        </div>
+        <div style="position: absolute; left: 409px; top: 964px;">
+            <input type=checkbox id="i136" value=0></input>
+        </div>
+        <div style="position: absolute; left: 418px; top: 964px;">
+            <input type=checkbox id="i137" value=0></input>
+        </div>
+        <div style="position: absolute; left: 432px; top: 964px;">
+            <input type=checkbox id="i138" value=0></input>
+        </div>
+        <div style="position: absolute; left: 441px; top: 964px;">
+            <input type=checkbox id="i139" value=0></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 964px;">
+            <input type=checkbox id="i140" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 964px;">
+            <input type=checkbox id="i141" value=0></input>
+        </div>
+        <div style="position: absolute; left: 468px; top: 964px;">
+            <input type=checkbox id="i142" value=0></input>
+        </div>
+        <div style="position: absolute; left: 50px; top: 1002px;">
+            <input type=text id="i143" style="width: 120px;" list="bronie"></input>
+        </div>
+        <div style="position: absolute; left: 176px; top: 1002px;">
+            <input type=text id="i144" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 220px; top: 1002px;">
+            <input type=text id="i145" style="width: 85px;"></input>
+        </div>
+        <div style="position: absolute; left: 320px; top: 1002px;">
+            <input type=text id="i146" style="width: 60px;"></input>
+        </div>
+        <div style="position: absolute; left: 396px; top: 1002px;">
+            <input type=text id="i147" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 440px; top: 1002px;">
+            <input type=text id="i148" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 100px; top: 1022px;">
+            <input type=text id="i149" style="width: 210px;"></input>
+        </div>
+        <div style="position: absolute; left: 332px; top: 1020px;">
+            <input type=checkbox id="i150" value=0></input>
+        </div>
+        <div style="position: absolute; left: 341px; top: 1020px;">
+            <input type=checkbox id="i151" value=0></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 1020px;">
+            <input type=checkbox id="i152" value=0></input>
+        </div>
+        <div style="position: absolute; left: 359px; top: 1020px;">
+            <input type=checkbox id="i153" value=0></input>
+        </div>
+        <div style="position: absolute; left: 368px; top: 1020px;">
+            <input type=checkbox id="i154" value=0></input>
+        </div>
+        <div style="position: absolute; left: 382px; top: 1020px;">
+            <input type=checkbox id="i155" value=0></input>
+        </div>
+        <div style="position: absolute; left: 391px; top: 1020px;">
+            <input type=checkbox id="i156" value=0></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 1020px;">
+            <input type=checkbox id="i157" value=0></input>
+        </div>
+        <div style="position: absolute; left: 409px; top: 1020px;">
+            <input type=checkbox id="i158" value=0></input>
+        </div>
+        <div style="position: absolute; left: 418px; top: 1020px;">
+            <input type=checkbox id="i159" value=0></input>
+        </div>
+        <div style="position: absolute; left: 432px; top: 1020px;">
+            <input type=checkbox id="i160" value=0></input>
+        </div>
+        <div style="position: absolute; left: 441px; top: 1020px;">
+            <input type=checkbox id="i161" value=0></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 1020px;">
+            <input type=checkbox id="i162" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 1020px;">
+            <input type=checkbox id="i163" value=0></input>
+        </div>
+        <div style="position: absolute; left: 468px; top: 1020px;">
+            <input type=checkbox id="i164" value=0></input>
+        </div>
+        <div style="position: absolute; left: 332px; top: 1030px;">
+            <input type=checkbox id="i165" value=0></input>
+        </div>
+        <div style="position: absolute; left: 341px; top: 1030px;">
+            <input type=checkbox id="i167" value=0></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 1030px;">
+            <input type=checkbox id="i168" value=0></input>
+        </div>
+        <div style="position: absolute; left: 359px; top: 1030px;">
+            <input type=checkbox id="i169" value=0></input>
+        </div>
+        <div style="position: absolute; left: 368px; top: 1030px;">
+            <input type=checkbox id="i170" value=0></input>
+        </div>
+        <div style="position: absolute; left: 382px; top: 1030px;">
+            <input type=checkbox id="i171" value=0></input>
+        </div>
+        <div style="position: absolute; left: 391px; top: 1030px;">
+            <input type=checkbox id="i172" value=0></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 1030px;">
+            <input type=checkbox id="i173" value=0></input>
+        </div>
+        <div style="position: absolute; left: 409px; top: 1030px;">
+            <input type=checkbox id="i174" value=0></input>
+        </div>
+        <div style="position: absolute; left: 418px; top: 1030px;">
+            <input type=checkbox id="i175" value=0></input>
+        </div>
+        <div style="position: absolute; left: 432px; top: 1030px;">
+            <input type=checkbox id="i176" value=0></input>
+        </div>
+        <div style="position: absolute; left: 441px; top: 1030px;">
+            <input type=checkbox id="i177" value=0></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 1030px;">
+            <input type=checkbox id="i178" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 1030px;">
+            <input type=checkbox id="i179" value=0></input>
+        </div>
+        <div style="position: absolute; left: 468px; top: 1030px;">
+            <input type=checkbox id="i180" value=0></input>
+        </div>
+        <div style="position: absolute; left: 50px; top: 1068px;">
+            <input type=text id="i181" style="width: 120px;" list="bronie"></input>
+        </div>
+        <div style="position: absolute; left: 176px; top: 1068px;">
+            <input type=text id="i182" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 220px; top: 1068px;">
+            <input type=text id="i183" style="width: 85px;"></input>
+        </div>
+        <div style="position: absolute; left: 320px; top: 1068px;">
+            <input type=text id="i184" style="width: 60px;"></input>
+        </div>
+        <div style="position: absolute; left: 396px; top: 1068px;">
+            <input type=text id="i185" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 440px; top: 1068px;">
+            <input type=text id="i186" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 100px; top: 1088px;">
+            <input type=text id="i187" style="width: 210px;"></input>
+        </div>
+        <div style="position: absolute; left: 332px; top: 1086px;">
+            <input type=checkbox id="i188" value=0></input>
+        </div>
+        <div style="position: absolute; left: 341px; top: 1086px;">
+            <input type=checkbox id="i189" value=0></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 1086px;">
+            <input type=checkbox id="i190" value=0></input>
+        </div>
+        <div style="position: absolute; left: 359px; top: 1086px;">
+            <input type=checkbox id="i191" value=0></input>
+        </div>
+        <div style="position: absolute; left: 368px; top: 1086px;">
+            <input type=checkbox id="i192" value=0></input>
+        </div>
+        <div style="position: absolute; left: 382px; top: 1086px;">
+            <input type=checkbox id="i193" value=0></input>
+        </div>
+        <div style="position: absolute; left: 391px; top: 1086px;">
+            <input type=checkbox id="i194" value=0></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 1086px;">
+            <input type=checkbox id="i196" value=0></input>
+        </div>
+        <div style="position: absolute; left: 409px; top: 1086px;">
+            <input type=checkbox id="i197" value=0></input>
+        </div>
+        <div style="position: absolute; left: 418px; top: 1086px;">
+            <input type=checkbox id="i198" value=0></input>
+        </div>
+        <div style="position: absolute; left: 432px; top: 1086px;">
+            <input type=checkbox id="i199" value=0></input>
+        </div>
+        <div style="position: absolute; left: 441px; top: 1086px;">
+            <input type=checkbox id="i200" value=0></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 1086px;">
+            <input type=checkbox id="i201" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 1086px;">
+            <input type=checkbox id="i202" value=0></input>
+        </div>
+        <div style="position: absolute; left: 468px; top: 1086px;">
+            <input type=checkbox id="i203" value=0></input>
+        </div>
+        <div style="position: absolute; left: 332px; top: 1096px;">
+            <input type=checkbox id="i204" value=0></input>
+        </div>
+        <div style="position: absolute; left: 341px; top: 1096px;">
+            <input type=checkbox id="i205" value=0></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 1096px;">
+            <input type=checkbox id="i206" value=0></input>
+        </div>
+        <div style="position: absolute; left: 359px; top: 1096px;">
+            <input type=checkbox id="i207" value=0></input>
+        </div>
+        <div style="position: absolute; left: 368px; top: 1096px;">
+            <input type=checkbox id="i208" value=0></input>
+        </div>
+        <div style="position: absolute; left: 382px; top: 1096px;">
+            <input type=checkbox id="i209" value=0></input>
+        </div>
+        <div style="position: absolute; left: 391px; top: 1096px;">
+            <input type=checkbox id="i210" value=0></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 1096px;">
+            <input type=checkbox id="i211" value=0></input>
+        </div>
+        <div style="position: absolute; left: 409px; top: 1096px;">
+            <input type=checkbox id="i212" value=0></input>
+        </div>
+        <div style="position: absolute; left: 418px; top: 1096px;">
+            <input type=checkbox id="i213" value=0></input>
+        </div>
+        <div style="position: absolute; left: 432px; top: 1096px;">
+            <input type=checkbox id="i214" value=0></input>
+        </div>
+        <div style="position: absolute; left: 441px; top: 1096px;">
+            <input type=checkbox id="i215" value=0></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 1096px;">
+            <input type=checkbox id="i216" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 1096px;">
+            <input type=checkbox id="i217" value=0></input>
+        </div>
+        <div style="position: absolute; left: 468px; top: 1096px;">
+            <input type=checkbox id="i218" value=0></input>
+        </div>
+        <div style="position: absolute; left: 50px; top: 1134px;">
+            <input type=text id="i219" style="width: 120px;" list="bronie"></input>
+        </div>
+        <div style="position: absolute; left: 176px; top: 1134px;">
+            <input type=text id="i220" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 220px; top: 1134px;">
+            <input type=text id="i221" style="width: 85px;"></input>
+        </div>
+        <div style="position: absolute; left: 320px; top: 1134px;">
+            <input type=text id="i222" style="width: 60px;"></input>
+        </div>
+        <div style="position: absolute; left: 396px; top: 1134px;">
+            <input type=text id="i223" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 440px; top: 1134px;">
+            <input type=text id="i224" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 100px; top: 1154px;">
+            <input type=text id="i225" style="width: 210px;"></input>
+        </div>
+        <div style="position: absolute; left: 332px; top: 1152px;">
+            <input type=checkbox id="i226" value=0></input>
+        </div>
+        <div style="position: absolute; left: 341px; top: 1152px;">
+            <input type=checkbox id="i227" value=0></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 1152px;">
+            <input type=checkbox id="i228" value=0></input>
+        </div>
+        <div style="position: absolute; left: 359px; top: 1152px;">
+            <input type=checkbox id="i229" value=0></input>
+        </div>
+        <div style="position: absolute; left: 368px; top: 1152px;">
+            <input type=checkbox id="i230" value=0></input>
+        </div>
+        <div style="position: absolute; left: 382px; top: 1152px;">
+            <input type=checkbox id="i231" value=0></input>
+        </div>
+        <div style="position: absolute; left: 391px; top: 1152px;">
+            <input type=checkbox id="i232" value=0></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 1152px;">
+            <input type=checkbox id="i233" value=0></input>
+        </div>
+        <div style="position: absolute; left: 409px; top: 1152px;">
+            <input type=checkbox id="i234" value=0></input>
+        </div>
+        <div style="position: absolute; left: 418px; top: 1152px;">
+            <input type=checkbox id="i235" value=0></input>
+        </div>
+        <div style="position: absolute; left: 432px; top: 1152px;">
+            <input type=checkbox id="i236" value=0></input>
+        </div>
+        <div style="position: absolute; left: 441px; top: 1152px;">
+            <input type=checkbox id="i237" value=0></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 1152px;">
+            <input type=checkbox id="i238" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 1152px;">
+            <input type=checkbox id="i239" value=0></input>
+        </div>
+        <div style="position: absolute; left: 468px; top: 1152px;">
+            <input type=checkbox id="i240" value=0></input>
+        </div>
+        <div style="position: absolute; left: 332px; top: 1162px;">
+            <input type=checkbox id="i241" value=0></input>
+        </div>
+        <div style="position: absolute; left: 341px; top: 1162px;">
+            <input type=checkbox id="i242" value=0></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 1162px;">
+            <input type=checkbox id="i243" value=0></input>
+        </div>
+        <div style="position: absolute; left: 359px; top: 1162px;">
+            <input type=checkbox id="i244" value=0></input>
+        </div>
+        <div style="position: absolute; left: 368px; top: 1162px;">
+            <input type=checkbox id="i245" value=0></input>
+        </div>
+        <div style="position: absolute; left: 382px; top: 1162px;">
+            <input type=checkbox id="i246" value=0></input>
+        </div>
+        <div style="position: absolute; left: 391px; top: 1162px;">
+            <input type=checkbox id="i247" value=0></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 1162px;">
+            <input type=checkbox id="i248" value=0></input>
+        </div>
+        <div style="position: absolute; left: 409px; top: 1162px;">
+            <input type=checkbox id="i249" value=0></input>
+        </div>
+        <div style="position: absolute; left: 418px; top: 1162px;">
+            <input type=checkbox id="i250" value=0></input>
+        </div>
+        <div style="position: absolute; left: 432px; top: 1162px;">
+            <input type=checkbox id="i251" value=0></input>
+        </div>
+        <div style="position: absolute; left: 441px; top: 1162px;">
+            <input type=checkbox id="i252" value=0></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 1162px;">
+            <input type=checkbox id="i253" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 1162px;">
+            <input type=checkbox id="i254" value=0></input>
+        </div>
+        <div style="position: absolute; left: 468px; top: 1162px;">
+            <input type=checkbox id="i255" value=0></input>
+        </div>
+        <div style="position: absolute; left: 50px; top: 1200px;">
+            <input type=text id="i256" style="width: 120px;" list="bronie"></input>
+        </div>
+        <div style="position: absolute; left: 176px; top: 1200px;">
+            <input type=text id="i257" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 220px; top: 1200px;">
+            <input type=text id="i258" style="width: 85px;"></input>
+        </div>
+        <div style="position: absolute; left: 320px; top: 1200px;">
+            <input type=text id="i259" style="width: 60px;"></input>
+        </div>
+        <div style="position: absolute; left: 396px; top: 1200px;">
+            <input type=text id="i260" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 440px; top: 1200px;">
+            <input type=text id="i261" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 100px; top: 1220px;">
+            <input type=text id="i262" style="width: 210px;"></input>
+        </div>
+        <div style="position: absolute; left: 332px; top: 1218px;">
+            <input type=checkbox id="i263" value=0></input>
+        </div>
+        <div style="position: absolute; left: 341px; top: 1218px;">
+            <input type=checkbox id="i264" value=0></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 1218px;">
+            <input type=checkbox id="i265" value=0></input>
+        </div>
+        <div style="position: absolute; left: 359px; top: 1218px;">
+            <input type=checkbox id="i266" value=0></input>
+        </div>
+        <div style="position: absolute; left: 368px; top: 1218px;">
+            <input type=checkbox id="i267" value=0></input>
+        </div>
+        <div style="position: absolute; left: 382px; top: 1218px;">
+            <input type=checkbox id="i268" value=0></input>
+        </div>
+        <div style="position: absolute; left: 391px; top: 1218px;">
+            <input type=checkbox id="i269" value=0></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 1218px;">
+            <input type=checkbox id="i270" value=0></input>
+        </div>
+        <div style="position: absolute; left: 409px; top: 1218px;">
+            <input type=checkbox id="i271" value=0></input>
+        </div>
+        <div style="position: absolute; left: 418px; top: 1218px;">
+            <input type=checkbox id="i272" value=0></input>
+        </div>
+        <div style="position: absolute; left: 432px; top: 1218px;">
+            <input type=checkbox id="i273" value=0></input>
+        </div>
+        <div style="position: absolute; left: 441px; top: 1218px;">
+            <input type=checkbox id="i274" value=0></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 1218px;">
+            <input type=checkbox id="i275" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 1218px;">
+            <input type=checkbox id="i276" value=0></input>
+        </div>
+        <div style="position: absolute; left: 468px; top: 1218px;">
+            <input type=checkbox id="i277" value=0></input>
+        </div>
+        <div style="position: absolute; left: 332px; top: 1228px;">
+            <input type=checkbox id="i278" value=0></input>
+        </div>
+        <div style="position: absolute; left: 341px; top: 1228px;">
+            <input type=checkbox id="i279" value=0></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 1228px;">
+            <input type=checkbox id="i280" value=0></input>
+        </div>
+        <div style="position: absolute; left: 359px; top: 1228px;">
+            <input type=checkbox id="i281" value=0></input>
+        </div>
+        <div style="position: absolute; left: 368px; top: 1228px;">
+            <input type=checkbox id="i282" value=0></input>
+        </div>
+        <div style="position: absolute; left: 382px; top: 1228px;">
+            <input type=checkbox id="i283" value=0></input>
+        </div>
+        <div style="position: absolute; left: 391px; top: 1228px;">
+            <input type=checkbox id="i284" value=0></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 1228px;">
+            <input type=checkbox id="i285" value=0></input>
+        </div>
+        <div style="position: absolute; left: 409px; top: 1228px;">
+            <input type=checkbox id="i286" value=0></input>
+        </div>
+        <div style="position: absolute; left: 418px; top: 1228px;">
+            <input type=checkbox id="i287" value=0></input>
+        </div>
+        <div style="position: absolute; left: 432px; top: 1228px;">
+            <input type=checkbox id="i288" value=0></input>
+        </div>
+        <div style="position: absolute; left: 441px; top: 1228px;">
+            <input type=checkbox id="i289" value=0></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 1228px;">
+            <input type=checkbox id="i290" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 1228px;">
+            <input type=checkbox id="i291" value=0></input>
+        </div>
+        <div style="position: absolute; left: 468px; top: 1228px;">
+            <input type=checkbox id="i292" value=0></input>
+        </div>
+        <div style="position: absolute; left: 50px; top: 1266px;">
+            <input type=text id="i293" style="width: 120px;" list="bronie"></input>
+        </div>
+        <div style="position: absolute; left: 176px; top: 1266px;">
+            <input type=text id="i294" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 220px; top: 1266px;">
+            <input type=text id="i295" style="width: 85px;"></input>
+        </div>
+        <div style="position: absolute; left: 320px; top: 1266px;">
+            <input type=text id="i296" style="width: 60px;"></input>
+        </div>
+        <div style="position: absolute; left: 396px; top: 1266px;">
+            <input type=text id="i297" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 440px; top: 1266px;">
+            <input type=text id="i298" style="width: 40px;"></input>
+        </div>
+        <div style="position: absolute; left: 100px; top: 1286px;">
+            <input type=text id="i299" style="width: 210px;"></input>
+        </div>
+        <div style="position: absolute; left: 332px; top: 1284px;">
+            <input type=checkbox id="i300" value=0></input>
+        </div>
+        <div style="position: absolute; left: 341px; top: 1284px;">
+            <input type=checkbox id="i301" value=0></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 1284px;">
+            <input type=checkbox id="i302" value=0></input>
+        </div>
+        <div style="position: absolute; left: 359px; top: 1284px;">
+            <input type=checkbox id="i303" value=0></input>
+        </div>
+        <div style="position: absolute; left: 368px; top: 1284px;">
+            <input type=checkbox id="i304" value=0></input>
+        </div>
+        <div style="position: absolute; left: 382px; top: 1284px;">
+            <input type=checkbox id="i305" value=0></input>
+        </div>
+        <div style="position: absolute; left: 391px; top: 1284px;">
+            <input type=checkbox id="i306" value=0></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 1284px;">
+            <input type=checkbox id="i307" value=0></input>
+        </div>
+        <div style="position: absolute; left: 409px; top: 1284px;">
+            <input type=checkbox id="i308" value=0></input>
+        </div>
+        <div style="position: absolute; left: 418px; top: 1284px;">
+            <input type=checkbox id="i309" value=0></input>
+        </div>
+        <div style="position: absolute; left: 432px; top: 1284px;">
+            <input type=checkbox id="i310" value=0></input>
+        </div>
+        <div style="position: absolute; left: 441px; top: 1284px;">
+            <input type=checkbox id="i311" value=0></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 1284px;">
+            <input type=checkbox id="i312" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 1284px;">
+            <input type=checkbox id="i313" value=0></input>
+        </div>
+        <div style="position: absolute; left: 468px; top: 1284px;">
+            <input type=checkbox id="i314" value=0></input>
+        </div>
+        <div style="position: absolute; left: 332px; top: 1294px;">
+            <input type=checkbox id="i315" value=0></input>
+        </div>
+        <div style="position: absolute; left: 341px; top: 1294px;">
+            <input type=checkbox id="i316" value=0></input>
+        </div>
+        <div style="position: absolute; left: 350px; top: 1294px;">
+            <input type=checkbox id="i317" value=0></input>
+        </div>
+        <div style="position: absolute; left: 359px; top: 1294px;">
+            <input type=checkbox id="i318" value=0></input>
+        </div>
+        <div style="position: absolute; left: 368px; top: 1294px;">
+            <input type=checkbox id="i319" value=0></input>
+        </div>
+        <div style="position: absolute; left: 382px; top: 1294px;">
+            <input type=checkbox id="i320" value=0></input>
+        </div>
+        <div style="position: absolute; left: 391px; top: 1294px;">
+            <input type=checkbox id="i321" value=0></input>
+        </div>
+        <div style="position: absolute; left: 400px; top: 1294px;">
+            <input type=checkbox id="i322" value=0></input>
+        </div>
+        <div style="position: absolute; left: 409px; top: 1294px;">
+            <input type=checkbox id="i323" value=0></input>
+        </div>
+        <div style="position: absolute; left: 418px; top: 1294px;">
+            <input type=checkbox id="i324" value=0></input>
+        </div>
+        <div style="position: absolute; left: 432px; top: 1294px;">
+            <input type=checkbox id="i325" value=0></input>
+        </div>
+        <div style="position: absolute; left: 441px; top: 1294px;">
+            <input type=checkbox id="i326" value=0></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 1294px;">
+            <input type=checkbox id="i327" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 1294px;">
+            <input type=checkbox id="i328" value=0></input>
+        </div>
+        <div style="position: absolute; left: 468px; top: 1294px;">
+            <input type=checkbox id="i329" value=0></input>
+        </div>
+
+        <div style="position: absolute; left: 131px; top: 607px;">
+            <input type=checkbox id="i330" name="WW" value=0></input>
+        </div>
+        <div style="position: absolute; left: 141px; top: 607px;">
+            <input type=checkbox id="i331" name="WW" value=0></input>
+        </div>
+        <div style="position: absolute; left: 152px; top: 607px;">
+            <input type=checkbox id="i332" name="WW" value=0></input>
+        </div>
+        <div style="position: absolute; left: 131px; top: 617px;">
+            <input type=checkbox id="i333" name="WW" value=0></input>
+        </div>
+        <div style="position: absolute; left: 141px; top: 617px;">
+            <input type=checkbox id="i334" name="WW" value=0></input>
+        </div>
+        <div style="position: absolute; left: 152px; top: 617px;">
+            <input type=checkbox id="i335" name="WW" value=0></input>
+        </div>
+        <div style="position: absolute; left: 131px; top: 627px;">
+            <input type=checkbox id="i336" name="WW" value=0></input>
+        </div>
+        <div style="position: absolute; left: 141px; top: 627px;">
+            <input type=checkbox id="i337" name="WW" value=0></input>
+        </div>
+        <div style="position: absolute; left: 175px; top: 607px;">
+            <input type=checkbox id="i338" name="US" value=0></input>
+        </div>
+        <div style="position: absolute; left: 185px; top: 607px;">
+            <input type=checkbox id="i339" name="US" value=0></input>
+        </div>
+        <div style="position: absolute; left: 196px; top: 607px;">
+            <input type=checkbox id="i340" name="US" value=0></input>
+        </div>
+        <div style="position: absolute; left: 175px; top: 617px;">
+            <input type=checkbox id="i341" name="US" value=0></input>
+        </div>
+        <div style="position: absolute; left: 185px; top: 617px;">
+            <input type=checkbox id="i342" name="US" value=0></input>
+        </div>
+        <div style="position: absolute; left: 196px; top: 617px;">
+            <input type=checkbox id="i343" name="US" value=0></input>
+        </div>
+        <div style="position: absolute; left: 175px; top: 627px;">
+            <input type=checkbox id="i344" name="US" value=0></input>
+        </div>
+        <div style="position: absolute; left: 185px; top: 627px;">
+            <input type=checkbox id="i345" name="US" value=0></input>
+        </div>
+        <div style="position: absolute; left: 220px; top: 607px;">
+            <input type=checkbox id="i346" value=0></input>
+        </div>
+        <div style="position: absolute; left: 230px; top: 607px;">
+            <input type=checkbox id="i347" value=0></input>
+        </div>
+        <div style="position: absolute; left: 241px; top: 607px;">
+            <input type=checkbox id="i348" value=0></input>
+        </div>
+        <div style="position: absolute; left: 220px; top: 617px;">
+            <input type=checkbox id="i349" value=0></input>
+        </div>
+        <div style="position: absolute; left: 230px; top: 617px;">
+            <input type=checkbox id="i350" value=0></input>
+        </div>
+        <div style="position: absolute; left: 241px; top: 617px;">
+            <input type=checkbox id="i351" value=0></input>
+        </div>
+        <div style="position: absolute; left: 220px; top: 627px;">
+            <input type=checkbox id="i352" value=0></input>
+        </div>
+        <div style="position: absolute; left: 230px; top: 627px;">
+            <input type=checkbox id="i353" value=0></input>
+        </div>
+        <div style="position: absolute; left: 265px; top: 607px;">
+            <input type=checkbox id="i354" value=0></input>
+        </div>
+        <div style="position: absolute; left: 275px; top: 607px;">
+            <input type=checkbox id="i355" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 607px;">
+            <input type=checkbox id="i356" value=0></input>
+        </div>
+        <div style="position: absolute; left: 265px; top: 617px;">
+            <input type=checkbox id="i357" value=0></input>
+        </div>
+        <div style="position: absolute; left: 275px; top: 617px;">
+            <input type=checkbox id="i358" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 617px;">
+            <input type=checkbox id="i359" value=0></input>
+        </div>
+        <div style="position: absolute; left: 265px; top: 627px;">
+            <input type=checkbox id="i360" value=0></input>
+        </div>
+        <div style="position: absolute; left: 275px; top: 627px;">
+            <input type=checkbox id="i361" value=0></input>
+        </div>
+        <div style="position: absolute; left: 309px; top: 607px;">
+            <input type=checkbox id="i362" value=0></input>
+        </div>
+        <div style="position: absolute; left: 319px; top: 607px;">
+            <input type=checkbox id="i363" value=0></input>
+        </div>
+        <div style="position: absolute; left: 330px; top: 607px;">
+            <input type=checkbox id="i364" value=0></input>
+        </div>
+        <div style="position: absolute; left: 309px; top: 617px;">
+            <input type=checkbox id="i365" value=0></input>
+        </div>
+        <div style="position: absolute; left: 319px; top: 617px;">
+            <input type=checkbox id="i366" value=0></input>
+        </div>
+        <div style="position: absolute; left: 330px; top: 617px;">
+            <input type=checkbox id="i367" value=0></input>
+        </div>
+        <div style="position: absolute; left: 309px; top: 627px;">
+            <input type=checkbox id="i368" value=0></input>
+        </div>
+        <div style="position: absolute; left: 319px; top: 627px;">
+            <input type=checkbox id="i369" value=0></input>
+        </div>
+        <div style="position: absolute; left: 352px; top: 607px;">
+            <input type=checkbox id="i370" name="Int" value=0></input>
+        </div>
+        <div style="position: absolute; left: 362px; top: 607px;">
+            <input type=checkbox id="i371" name="Int" value=0></input>
+        </div>
+        <div style="position: absolute; left: 373px; top: 607px;">
+            <input type=checkbox id="i372" name="Int" value=0></input>
+        </div>
+        <div style="position: absolute; left: 352px; top: 617px;">
+            <input type=checkbox id="i373" name="Int" value=0></input>
+        </div>
+        <div style="position: absolute; left: 362px; top: 617px;">
+            <input type=checkbox id="i374" name="Int" value=0></input>
+        </div>
+        <div style="position: absolute; left: 373px; top: 617px;">
+            <input type=checkbox id="i375" name="Int" value=0></input>
+        </div>
+        <div style="position: absolute; left: 352px; top: 627px;">
+            <input type=checkbox id="i376" name="Int" value=0></input>
+        </div>
+        <div style="position: absolute; left: 362px; top: 627px;">
+            <input type=checkbox id="i377" name="Int" value=0></input>
+        </div>
+        <div style="position: absolute; left: 395px; top: 607px;">
+            <input type=checkbox id="i378" value=0></input>
+        </div>
+        <div style="position: absolute; left: 405px; top: 607px;">
+            <input type=checkbox id="i379" value=0></input>
+        </div>
+        <div style="position: absolute; left: 416px; top: 607px;">
+            <input type=checkbox id="i380" value=0></input>
+        </div>
+        <div style="position: absolute; left: 395px; top: 617px;">
+            <input type=checkbox id="i381" value=0></input>
+        </div>
+        <div style="position: absolute; left: 405px; top: 617px;">
+            <input type=checkbox id="i382" value=0></input>
+        </div>
+        <div style="position: absolute; left: 416px; top: 617px;">
+            <input type=checkbox id="i383" value=0></input>
+        </div>
+        <div style="position: absolute; left: 395px; top: 627px;">
+            <input type=checkbox id="i384" value=0></input>
+        </div>
+        <div style="position: absolute; left: 405px; top: 627px;">
+            <input type=checkbox id="i385" value=0></input>
+        </div>
+        <div style="position: absolute; left: 438px; top: 607px;">
+            <input type=checkbox id="i386" value=0></input>
+        </div>
+        <div style="position: absolute; left: 448px; top: 607px;">
+            <input type=checkbox id="i387" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 607px;">
+            <input type=checkbox id="i388" value=0></input>
+        </div>
+        <div style="position: absolute; left: 438px; top: 617px;">
+            <input type=checkbox id="i389" value=0></input>
+        </div>
+        <div style="position: absolute; left: 448px; top: 617px;">
+            <input type=checkbox id="i390" value=0></input>
+        </div>
+        <div style="position: absolute; left: 459px; top: 617px;">
+            <input type=checkbox id="i391" value=0></input>
+        </div>
+        <div style="position: absolute; left: 438px; top: 627px;">
+            <input type=checkbox id="i392" value=0></input>
+        </div>
+        <div style="position: absolute; left: 448px; top: 627px;">
+            <input type=checkbox id="i393" value=0></input>
+        </div>
+        <div style="position: absolute; left: 131px; top: 737px;">
+            <input type=checkbox id="i394" name="A" value=0></input>
+        </div>
+        <div style="position: absolute; left: 141px; top: 737px;">
+            <input type=checkbox id="i331" name="A" value=0></input>
+        </div>
+        <div style="position: absolute; left: 152px; top: 737px;">
+            <input type=checkbox id="i395" name="A" value=0></input>
+        </div>
+        <div style="position: absolute; left: 131px; top: 747px;">
+            <input type=checkbox id="i396" name="A" value=0></input>
+        </div>
+        <div style="position: absolute; left: 141px; top: 747px;">
+            <input type=checkbox id="i397" name="A" value=0></input>
+        </div>
+        <div style="position: absolute; left: 152px; top: 747px;">
+            <input type=checkbox id="i398" name="A" value=0></input>
+        </div>
+        <div style="position: absolute; left: 175px; top: 737px;">
+            <input type=checkbox id="i399" name="Żyw" value=0></input>
+        </div>
+        <div style="position: absolute; left: 185px; top: 737px;">
+            <input type=checkbox id="i400" name="Żyw" value=0></input>
+        </div>
+        <div style="position: absolute; left: 196px; top: 737px;">
+            <input type=checkbox id="i401" name="Żyw" value=0></input>
+        </div>
+        <div style="position: absolute; left: 175px; top: 747px;">
+            <input type=checkbox id="i402" name="Żyw" value=0></input>
+        </div>
+        <div style="position: absolute; left: 185px; top: 747px;">
+            <input type=checkbox id="i403" name="Żyw" value=0></input>
+        </div>
+        <div style="position: absolute; left: 196px; top: 747px;">
+            <input type=checkbox id="i404" name="Żyw" value=0></input>
+        </div>
+        <div style="position: absolute; left: 175px; top: 757px;">
+            <input type=checkbox id="i405" name="Żyw" value=0></input>
+        </div>
+        <div style="position: absolute; left: 185px; top: 757px;">
+            <input type=checkbox id="i406" name="Żyw" value=0></input>
+        </div>
+        <div style="position: absolute; left: 352px; top: 737px;">
+            <input type=checkbox id="i407" name="Mag" value=0></input>
+        </div>
+        <div style="position: absolute; left: 362px; top: 737px;">
+            <input type=checkbox id="i408" name="Mag" value=0></input>
+        </div>
+        <div style="position: absolute; left: 373px; top: 737px;">
+            <input type=checkbox id="i409" name="Mag" value=0></input>
+        </div>
+        <div style="position: absolute; left: 352px; top: 747px;">
+            <input type=checkbox id="i410" name="Mag" value=0></input>
+        </div>
+        <div style="position: absolute; left: 362px; top: 747px;">
+            <input type=checkbox id="i411" name="Mag" value=0></input>
+        </div>
+        <div style="position: absolute; left: 373px; top: 747px;">
+            <input type=checkbox id="i412" name="Mag" value=0></input>
+        </div>
+        <div style="position: absolute; left: 570px; top: 260px;">
+            <input type=text id="i413" style="width: 170px;" value="Imię"></input>
+        </div>
+        <div style="position: absolute; left: 850px; top: 260px;">
+            <input type=text id="i414" style="width: 110px;" value="Imię"></input>
+        </div>
+        <div style="position: absolute; left: 610px; top: 290px;">
+            <input type=text id="i415" style="width: 120px;" value="Kampania"></input>
+        </div>
+        <div style="position: absolute; left: 870px; top: 290px;">
+            <input type=text id="i416" style="width: 100px;" value="Rok Kampanii"></input>
+        </div>
+        <div style="position: absolute; left: 535px; top: 390px;">
+            <input type=text id="i417" style="width: 30px;" value="Sz"></input>
+        </div>
+        <div style="position: absolute; left: 590px; top: 390px;">
+            <input type=text id="i418" style="width: 30px;" value="Sz w P"></input>
+        </div>
+        <div style="position: absolute; left: 645px; top: 390px;">
+            <input type=text id="i419" style="width: 30px;" value="R O"></input>
+        </div>
+        <div style="position: absolute; left: 700px; top: 390px;">
+            <input type=text id="i420" style="width: 30px;" value="Sza"></input>
+        </div>
+        <div style="position: absolute; left: 755px; top: 390px;">
+            <input type=text id="i421" style="width: 30px;" value="Bieg"></input>
+        </div>
+        <div style="position: absolute; left: 810px; top: 390px;">
+            <input type=text id="i422" style="width: 30px;" value="Przesk w Bie"></input>
+        </div>
+        <div style="position: absolute; left: 865px; top: 390px;">
+            <input type=text id="i423" style="width: 30px;" value="Przesk z Mie"></input>
+        </div>
+        <div style="position: absolute; left: 920px; top: 390px;">
+            <input type=text id="i424" style="width: 30px;" value="Lot"></input>
+        </div>
+        <div style="position: absolute; left: 700px; top: 440px;">
+            <input type=text id="i425" style="width: 30px;" value="Ostr marsz"></input>
+        </div>
+        <div style="position: absolute; left: 700px; top: 470px;">
+            <input type=text id="i426" style="width: 30px;" value="Utr podr"></input>
+        </div>
+        <div style="position: absolute; left: 920px; top: 440px;">
+            <input type=text id="i427" style="width: 30px;" value="Zwy marsz"></input>
+        </div>
+        <div style="position: absolute; left: 920px; top: 470px;">
+            <input type=text id="i428" style="width: 30px;" value="Swob podr"></input>
+        </div>
+        <div style="position: absolute; left: 530px; top: 875px;">
+            <input type=text id="i429" style="width: 170px;" list="pancerz"></input>
+        </div>
+        <div style="position: absolute; left: 705px; top: 875px;">
+            <input type=text id="i430" style="width: 160px;" list="lokacja"></input>
+        </div>
+        <div style="position: absolute; left: 875px; top: 875px;">
+            <input type=text id="i431" style="width: 30px;" value="Obc"></input>
+        </div>
+        <div style="position: absolute; left: 925px; top: 875px;">
+            <input type=text id="i432" style="width: 30px;" value="PŻ"></input>
+        </div>
+        <div style="position: absolute; left: 530px; top: 895px;">
+            <input type=text id="i433" style="width: 170px;" list="pancerz"></input>
+        </div>
+        <div style="position: absolute; left: 705px; top: 895px;">
+            <input type=text id="i434" style="width: 160px;" list="lokacja"></input>
+        </div>
+        <div style="position: absolute; left: 875px; top: 895px;">
+            <input type=text id="i435" style="width: 30px;" value="Obc"></input>
+        </div>
+        <div style="position: absolute; left: 925px; top: 895px;">
+            <input type=text id="i436" style="width: 30px;" value="PŻ"></input>
+        </div>
+        <div style="position: absolute; left: 530px; top: 916px;">
+            <input type=text id="i437" style="width: 170px;" list="pancerz"></input>
+        </div>
+        <div style="position: absolute; left: 705px; top: 916px;">
+            <input type=text id="i438" style="width: 160px;" list="lokacja"></input>
+        </div>
+        <div style="position: absolute; left: 875px; top: 916px;">
+            <input type=text id="i439" style="width: 30px;" value="Obc"></input>
+        </div>
+        <div style="position: absolute; left: 925px; top: 916px;">
+            <input type=text id="i440" style="width: 30px;" value="PŻ"></input>
+        </div>
+        <div style="position: absolute; left: 530px; top: 937px;">
+            <input type=text id="i441" style="width: 170px;" list="pancerz"></input>
+        </div>
+        <div style="position: absolute; left: 705px; top: 937px;">
+            <input type=text id="i442" style="width: 160px;" list="lokacja"></input>
+        </div>
+        <div style="position: absolute; left: 875px; top: 937px;">
+            <input type=text id="i443" style="width: 30px;" value="Obc"></input>
+        </div>
+        <div style="position: absolute; left: 925px; top: 937px;">
+            <input type=text id="i444" style="width: 30px;" value="PŻ"></input>
+        </div>
+        <div style="position: absolute; left: 530px; top: 958px;">
+            <input type=text id="i445" style="width: 170px;" list="pancerz"></input>
+        </div>
+        <div style="position: absolute; left: 705px; top: 958px;">
+            <input type=text id="i446" style="width: 160px;" list="lokacja"></input>
+        </div>
+        <div style="position: absolute; left: 875px; top: 958px;">
+            <input type=text id="i447" style="width: 30px;" value="Obc"></input>
+        </div>
+        <div style="position: absolute; left: 925px; top: 958px;">
+            <input type=text id="i448" style="width: 30px;" value="PŻ"></input>
+        </div>
+        <div style="position: absolute; left: 530px; top: 979px;">
+            <input type=text id="i449" style="width: 170px;" list="pancerz"></input>
+        </div>
+        <div style="position: absolute; left: 705px; top: 979px;">
+            <input type=text id="i450" style="width: 160px;" list="lokacja"></input>
+        </div>
+        <div style="position: absolute; left: 875px; top: 979px;">
+            <input type=text id="i451" style="width: 30px;" value="Obc"></input>
+        </div>
+        <div style="position: absolute; left: 925px; top: 979px;">
+            <input type=text id="i452" style="width: 30px;" value="PŻ"></input>
+        </div>
+        <div style="position: absolute; left: 570px; top: 1069px;">
+            <input type=text id="i453" style="width: 20px;" value="PŻ"></input>
+        </div>
+        <div style="position: absolute; left: 570px; top: 1159px;">
+            <input type=text id="i454" style="width: 20px;" value="PŻ"></input>
+        </div>
+        <div style="position: absolute; left: 570px; top: 1249px;">
+            <input type=text id="i455" style="width: 20px;" value="PŻ"></input>
+        </div>
+        <div style="position: absolute; left: 900px; top: 1069px;">
+            <input type=text id="i456" style="width: 20px;" value="PŻ"></input>
+        </div>
+        <div style="position: absolute; left: 900px; top: 1159px;">
+            <input type=text id="i457" style="width: 20px;" value="PŻ"></input>
+        </div>
+        <div style="position: absolute; left: 900px; top: 1249px;">
+            <input type=text id="i458" style="width: 20px;" value="PŻ"></input>
+        </div>
+        <div style="position: absolute; left: 620px; top: 1040px;">
+            <input type=hidden id="i459" value=""></input>
+            <img id="myimmage" alt="ustaw obrazek" src=""
+                 height="270" width="250">
+        </div>
+        <div style="position: absolute; left: 490px; top: 1315px;">
+            <input type=text id="i460" style="width: 500px;" value="inne"></input>
+        </div>
+    </div>
+    <datalist id="rasy">
+        <option value="Krasnolud"></option>
+        <option value="Człowiek"></option>
+        <option value="Elf"></option>
+        <option value="Niziolek"></option>
+    </datalist>
+    <datalist id="profesje">
+        <option value="Akolita" data-profesjewyjsciowe="cyrulik, demagog, fanatyk, kapłan, skryba, zakonnik"></option>
+        <option value="Banita" data-profesjewyjsciowe="demagog, rozbójnik, weteran, włóczykij, złodziej"></option>
+        <option value="Berserk z Norski" data-profesjewyjsciowe="gladiator, najemnik, sierżant, weteran, żeglarz"></option>
+        <option value="Chłop" data-profesjewyjsciowe="banita, fanatyk, ochotnik, rybak, rzemieślnik, sługa, śmieciarz, urzędnik, węglarz"></option>
+        <option value="Ciura obozowa" data-profesjewyjsciowe="przemytnik, rzemieślnik, sługa, szarlatan, szpieg, węglarz, włóczykij"></option>
+        <option value="Cyrkowiec"></option>
+        <option value="Cyrulik"></option>
+        <option value="Fanatyk"></option>
+        <option value="Flisak"></option>
+        <option value="Giermek"></option>
+        <option value="Gladiator"></option>
+        <option value="Goniec"></option>
+        <option value="Górnik"></option>
+        <option value="Guślarz" data-profesjewyjsciowe="akolita, banita, szarlatan, uczeń czrodzieja, włóczykij"></option>
+        <option value="Hiena cmentarna"></option>
+        <option value="Kanciarz" data-profesjewyjsciowe="banita, cyrkowiec, demagog, sługa, szarlatan, złodziej"></option>
+        <option value="Kozak kislevski"></option>
+        <option value="Leśnik"></option>
+        <option value="Łowca"></option>
+        <option value="Łowca nagród"></option>
+        <option value="Mieszczanin"></option>
+        <option value="Mytnik"></option>
+        <option value="Najemnik"></option>
+        <option value="Ochotnik"></option>
+        <option value="Ochroniarz"></option>
+        <option value="Oprych"></option>
+        <option value="Paź"></option>
+        <option value="Podżegacz"></option>
+        <option value="Porywacz zwłok"></option>
+        <option value="Posłaniec"></option>
+        <option value="Przemytnik"></option>
+        <option value="Przepatrywacz"></option>
+        <option value="Przewoźnik"></option>
+        <option value="Rybak"></option>
+        <option value="Rzecznik rodu"></option>
+        <option value="Rzemieślnik"></option>
+        <option value="Rzezimieszek"></option>
+        <option value="Skryba" data-profesjewyjsciowe="akolita, nawigator, podżegacz, uczeń czarodzija, uczony"></option>
+        <option value="Sługa"></option>
+        <option value="Strażnik"></option>
+        <option value="Strażnik dróg"></option>
+        <option value="Strażnik pól"></option>
+        <option value="Strażnik więzienny"></option>
+        <option value="Szczurołap"></option>
+        <option value="Szermierz estalijski"></option>
+        <option value="Szlachcic"></option>
+        <option value="Śmieciarz"></option>
+        <option value="Tarczownik"></option>
+        <option value="Uczeń czarodzieja" data-profesjewyjsciowe="skryba, uczony, wędrowny czarodziej"></option>
+        <option value="Węglarz"></option>
+        <option value="Włóczykij"></option>
+        <option value="Wojownik klanowy"></option>
+        <option value="Woźnica"></option>
+        <option value="Zabójca trolli" data-profesjewyjsciowe="Zabójca olbrzymów"></option>
+        <option value="Zarządca"></option>
+        <option value="Złodziej"></option>
+        <option value="Żak" data-profesjewyjsciowe="akolita, cyrulik, inżynier, medyk, podżegacz, rzecznik rodu, uczeń czarodzieja, uczony"></option>
+        <option value="Żeglarz"></option>
+        <option value="Żołnierz"></option>
+        <option value="Żołnierz okrętowy"></option>
+
+        <option value="Arcykapłan"></option>
+        <option value="Arcymag" data-profesjewyjsciowe="mistrz gildii, odkrywca"></option>
+        <option value="Arystokrata"></option>
+        <option value="Bard"></option>
+        <option value="Biczownik"></option>
+        <option value="Bosman"></option>
+        <option value="Demagog"></option>
+        <option value="Dworzanin"></option>
+        <option value="Fechmistrz"></option>
+        <option value="Herold"></option>
+        <option value="Herszt banitów"></option>
+        <option value="Inżynier" data-profesjewyjsciowe="mistrz gildii, mistrz rzemiosła, odkrywca, przemytnik, rajtar"></option>
+        <option value="Kapitan"></option>
+        <option value="Kapłan" data-profesjewyjsciowe="biczownik, majordomus, uczony, wybraniec boży"></option>
+        <option value="Karczmarz"></option>
+        <option value="Książę złodziei"></option>
+        <option value="Kupiec"></option>
+        <option value="Leśny duch"></option>
+        <option value="Łowca czarownic"></option>
+        <option value="Łowca wampirów"></option>
+        <option value="Majordomus"></option>
+        <option value="Medyk"></option>
+        <option value="Mistrz cieni"></option>
+        <option value="Mistrz gildii"></option>
+        <option value="Mistrz magii" data-profesjewyjsciowe="arcymag, odkrywca, uczony"></option>
+        <option value="Mistrz rzemiosła"></option>
+        <option value="Mistrz zakonny"></option>
+        <option value="Nawigator"></option>
+        <option value="Odkrywca" data-profesjewyjsciowe="kapitan, kupiec, oficer, szpieg"></option>
+        <option value="Oficer"></option>
+        <option value="Oprawca"></option>
+        <option value="Paser"></option>
+        <option value="Rajtar"></option>
+        <option value="Reketer"></option>
+        <option value="Rozbójnik"></option>
+        <option value="Rycerz"></option>
+        <option value="Sierżant"></option>
+        <option value="Skrytobójca"></option>
+        <option value="Strzelec"></option>
+        <option value="Szampierz"></option>
+        <option value="Szarlatan"></option>
+        <option value="Szpieg"></option>
+        <option value="Uczony"></option>
+        <option value="Urzędnik"></option>
+        <option value="Weteran"></option>
+        <option value="Wędrowny czarodziej" data-profesjewyjsciowe="mistrz magii, szarlatan, uczony"></option>
+        <option value="Włamywacz"></option>
+        <option value="Wybraniec boży"></option>
+        <option value="Zabójca demonów" data-profesjewyjsciowe="Chwalebna śmierć!"></option>
+        <option value="Zabójca olbrzymów" data-profesjewyjsciowe="Zabójca demonów"></option>
+        <option value="Zakonnik"></option>
+        <option value="Zwadźca"></option>
+        <option value="Zwiadowca"></option>
+    </datalist>
+    <datalist id="l3">
+        <option value="Mężczyzna"></option>
+        <option value="Kobieta"></option>
+    </datalist>
+    <datalist id="l4">
+        <option value="Bębniarz"></option>
+        <option value="Dudy"></option>
+        <option value="Dwa Byki"></option>
+        <option value="Głupiec Mummit"></option>
+        <option value="Gwiazda Uroku"></option>
+        <option value="Gwiazda Wieczorna"></option>
+        <option value="Kościół Rhyi"></option>
+        <option value="Lancet"></option>
+        <option value="Mędrzec Mammit"></option>
+        <option value="Pas Grungniego"></option>
+        <option value="Rozbity Wóz"></option>
+        <option value="Smok Dragomas"></option>
+        <option value="Sznur Limnera"></option>
+        <option value="Tancerka"></option>
+        <option value="Tłusty Kozioł"></option>
+        <option value="Vobist Ulotny"></option>
+        <option value="Wielki Krzyż"></option>
+        <option value="Wół Gnuthus"></option>
+        <option value="Wymund Pustelnik"></option>
+        <option value="Złoty Kogut"></option>
+    </datalist>
+    <datalist id="kolory">
+        <option value="Szary"></option>
+        <option value="Szaroniebieski"></option>
+        <option value="Ciemnoniebieski"></option>
+        <option value="Niebieski"></option>
+        <option value="Orzechowy"></option>
+        <option value="Zielony"></option>
+        <option value="Piwny"></option>
+        <option value="Jasnobrązowy"></option>
+        <option value="Kasztanowy"></option>
+        <option value="Brązowy"></option>
+        <option value="Ciemnobrązowy"></option>
+        <option value="Srebrny"></option>
+        <option value="Fioletowy"></option>
+        <option value="Czarny"></option>
+    </datalist>
+    <datalist id="wlosy">
+        <option value="Popielaty"></option>
+        <option value="Srebrny"></option>
+        <option value="Ciemny blond"></option>
+        <option value="Biały"></option>
+        <option value="Blond"></option>
+        <option value="Jasny blond"></option>
+        <option value="Ciemny Rudy"></option>
+        <option value="Rudy"></option>
+        <option value="Czerwony"></option>
+        <option value="Miedziany"></option>
+        <option value="Jasnobrązowy"></option>
+        <option value="Brązowy"></option>
+        <option value="Kasztanowy"></option>
+        <option value="Ciemnobrązowy"></option>
+        <option value="Czarny"></option>
+        <option value="Kruczoczarny"></option>
+    </datalist>
+    <datalist id="bronie">
+        <option value="Topór dwu ręczny"></option>
+        <option value="Młot bojowy"></option>
+        <option value="Sztylet"></option>
+        <option value="Nóż"></option>
+        <option value="Pałka"></option>
+        <option value="Krótki miecz"></option>
+        <option value="Korbacz"></option>
+        <option value="Miecz dwu ręczny"></option>
+        <option value="Halabarda"></option>
+        <option value="Kij"></option>
+        <option value="Kopia"></option>
+        <option value="Lanca"></option>
+        <option value="Lewak"></option>
+        <option value="Łamacz mieczy"></option>
+        <option value="Morgensztern"></option>
+        <option value="Puklerz"></option>
+        <option value="Rapier"></option>
+        <option value="Rękawica"></option>
+        <option value="Kastet"></option>
+        <option value="Szpada"></option>
+        <option value="Tarcza"></option>
+        <option value="Włócznia"></option>
+        <option value="Arkan"></option>
+        <option value="Bicz"></option>
+        <option value="Bolas"></option>
+        <option value="Długi łuk"></option>
+        <option value="Elfi łuk"></option>
+        <option value="Garłacz"></option>
+        <option value="Krótki łuk"></option>
+        <option value="Kusza pistoletowa"></option>
+        <option value="Kusza samopowtarzalna"></option>
+        <option value="Kusza"></option>
+        <option value="Łuk"></option>
+        <option value="Muszkiet hochlandzki"></option>
+        <option value="Gwiazdka do rzucania"></option>
+        <option value="Oszczep"></option>
+        <option value="Pistolet"></option>
+        <option value="Pistolet wielostrzałowy"></option>
+        <option value="Proca"></option>
+        <option value="Proca drzewcowa"></option>
+        <option value="Rusznica"></option>
+        <option value="Sieć"></option>
+        <option value="Rusznica wielostrzałowa"></option>
+        <option value="Topór do rzucania"></option>
+        <option value="Włucznia"></option>
+    </datalist>
+    <datalist id="pancerz">
+        <option value="Skórznia"></option>
+        <option value="Bransolety"></option>
+        <option value="Kirys"></option>
+        <option value="Tarcza na plecach"></option>
+        <option value="Skórzany hełm"></option>
+        <option value="Skórzane nogawice"></option>
+        <option value="Skórzana kurta"></option>
+        <option value="Skórzany kaftan"></option>
+        <option value="Kolczy czepiec"></option>
+        <option value="Kolcze nogawice"></option>
+        <option value="Kolcza koszula"></option>
+        <option value="Kolczy kaftan"></option>
+        <option value="Kolczuga"></option>
+        <option value="Zbroja kolcza"></option>
+        <option value="Hełm"></option>
+        <option value="Naramienniki płytowe"></option>
+        <option value="Nogawice płytowe"></option>
+        <option value="Napierśnik"></option>
+        <option value="Zbroja płytowa"></option>
+    </datalist>
+    <datalist id="lokacja">
+        <option value="Głowa"></option>
+        <option value="Korpus"></option>
+        <option value="Prawa ręka"></option>
+        <option value="Lewa ręka"></option>
+        <option value="Prawa i lewa ręka"></option>
+        <option value="Prawa noga"></option>
+        <option value="Lewa noga"></option>
+        <option value="Prawa i lewa noga"></option>
+        <option value="Korpus i ręce"></option>
+        <option value="Korpus, ręce i nogi"></option>
+        <option value="Wszystkie"></option>
+        <option value="Plecy"></option>
+    </datalist>
+    <div id="s2">
+        <div style="position: absolute; left: 170px; top: 1505px;">
+            <input type=checkbox id="i461" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1505px;">
+            <input type=checkbox id="i462" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1505px;">
+            <input type=checkbox id="i463" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1504px;">
+            <input type=text id="i464" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1504px;">
+            <input type=text id="i465" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+
+        <div style="position: absolute; left: 170px; top: 1535px;">
+            <input type=checkbox id="i466" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1535px;">
+            <input type=checkbox id="i467" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1535px;">
+            <input type=checkbox id="i468" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1534px;">
+            <input type=text id="i469" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1534px;">
+            <input type=text id="i470" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 1565px;">
+            <input type=checkbox id="i471" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1565px;">
+            <input type=checkbox id="i472" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1565px;">
+            <input type=checkbox id="i473" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1564px;">
+            <input type=text id="i474" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1564px;">
+            <input type=text id="i475" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 1595px;">
+            <input type=checkbox id="i476" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1595px;">
+            <input type=checkbox id="i477" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1595px;">
+            <input type=checkbox id="i478" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1594px;">
+            <input type=text id="i479" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1594px;">
+            <input type=text id="i480" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 1626px;">
+            <input type=checkbox id="i481" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1626px;">
+            <input type=checkbox id="i482" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1626px;">
+            <input type=checkbox id="i483" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1625px;">
+            <input type=text id="i484" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1625px;">
+            <input type=text id="i485" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 1656px;">
+            <input type=checkbox id="i486" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1656px;">
+            <input type=checkbox id="i487" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1656px;">
+            <input type=checkbox id="i488" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1655px;">
+            <input type=text id="i489" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1655px;">
+            <input type=text id="i490" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 1687px;">
+            <input type=checkbox id="i491" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1687px;">
+            <input type=checkbox id="i492" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1687px;">
+            <input type=checkbox id="i493" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1686px;">
+            <input type=text id="i494" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1686px;">
+            <input type=text id="i495" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 1717px;">
+            <input type=checkbox id="i496" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1717px;">
+            <input type=checkbox id="i497" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1717px;">
+            <input type=checkbox id="i498" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1716px;">
+            <input type=text id="i499" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1716px;">
+            <input type=text id="i500" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 1748px;">
+            <input type=checkbox id="i501" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1748px;">
+            <input type=checkbox id="i502" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1748px;">
+            <input type=checkbox id="i503" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1747px;">
+            <input type=text id="i504" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1747px;">
+            <input type=text id="i505" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 1778px;">
+            <input type=checkbox id="i506" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1778px;">
+            <input type=checkbox id="i507" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1778px;">
+            <input type=checkbox id="i508" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1777px;">
+            <input type=text id="i509" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1777px;">
+            <input type=text id="i510" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 1808px;">
+            <input type=checkbox id="i511" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1808px;">
+            <input type=checkbox id="i512" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1808px;">
+            <input type=checkbox id="i513" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1807px;">
+            <input type=text id="i514" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1807px;">
+            <input type=text id="i515" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 1838px;">
+            <input type=checkbox id="i516" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1838px;">
+            <input type=checkbox id="i517" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1838px;">
+            <input type=checkbox id="i518" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1837px;">
+            <input type=text id="i519" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1837px;">
+            <input type=text id="i520" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 1869px;">
+            <input type=checkbox id="i521" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1869px;">
+            <input type=checkbox id="i522" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1869px;">
+            <input type=checkbox id="i523" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1868px;">
+            <input type=text id="i524" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1868px;">
+            <input type=text id="i525" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 1899px;">
+            <input type=checkbox id="i526" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1899px;">
+            <input type=checkbox id="i527" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1899px;">
+            <input type=checkbox id="i528" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1898px;">
+            <input type=text id="i529" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1898px;">
+            <input type=text id="i530" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 1929px;">
+            <input type=checkbox id="i531" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1929px;">
+            <input type=checkbox id="i532" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1929px;">
+            <input type=checkbox id="i533" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1928px;">
+            <input type=text id="i534" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1928px;">
+            <input type=text id="i535" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 1959px;">
+            <input type=checkbox id="i536" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1959px;">
+            <input type=checkbox id="i537" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1959px;">
+            <input type=checkbox id="i538" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1958px;">
+            <input type=text id="i539" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1958px;">
+            <input type=text id="i540" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 1989px;">
+            <input type=checkbox id="i541" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 1989px;">
+            <input type=checkbox id="i542" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 1989px;">
+            <input type=checkbox id="i543" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 1988px;">
+            <input type=text id="i544" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 1988px;">
+            <input type=text id="i545" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2020px;">
+            <input type=checkbox id="i546" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 2020px;">
+            <input type=checkbox id="i547" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 2020px;">
+            <input type=checkbox id="i548" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 2019px;">
+            <input type=text id="i549" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 2019px;">
+            <input type=text id="i550" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2050px;">
+            <input type=checkbox id="i551" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 2050px;">
+            <input type=checkbox id="i552" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 2050px;">
+            <input type=checkbox id="i553" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 2049px;">
+            <input type=text id="i554" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 2049px;">
+            <input type=text id="i555" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2080px;">
+            <input type=checkbox id="i556" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 2080px;">
+            <input type=checkbox id="i557" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 2080px;">
+            <input type=checkbox id="i558" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 2079px;">
+            <input type=text id="i559" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 2079px;">
+            <input type=text id="i560" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+
+        <div style="position: absolute; left: 45px; top: 2149px;">
+            <input type=text id="i561" style="width: 120px;" value="0" list="umiejetnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2149px;">
+            <input type=checkbox id="i562" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 2149px;">
+            <input type=checkbox id="i563" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 2149px;">
+            <input type=checkbox id="i564" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 2149px;">
+            <input type=text id="i565" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 2149px;">
+            <input type=text id="i566" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 2149px;">
+            <input type=text id="i567" style="width: 20px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 45px; top: 2179px;">
+            <input type=text id="i568" style="width: 120px;" value="0" list="umiejetnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2179px;">
+            <input type=checkbox id="i569" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 2179px;">
+            <input type=checkbox id="i570" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 2179px;">
+            <input type=checkbox id="i571" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 2179px;">
+            <input type=text id="i572" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 2179px;">
+            <input type=text id="i573" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 2179px;">
+            <input type=text id="i574" style="width: 20px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 45px; top: 2210px;">
+            <input type=text id="i575" style="width: 120px;" value="0" list="umiejetnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2210px;">
+            <input type=checkbox id="i576" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 2210px;">
+            <input type=checkbox id="i577" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 2210px;">
+            <input type=checkbox id="i578" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 2210px;">
+            <input type=text id="i579" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 2210px;">
+            <input type=text id="i580" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 2210px;">
+            <input type=text id="i581" style="width: 20px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 45px; top: 2240px;">
+            <input type=text id="i582" style="width: 120px;" value="0" list="umiejetnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2240px;">
+            <input type=checkbox id="i583" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 2240px;">
+            <input type=checkbox id="i584" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 2240px;">
+            <input type=checkbox id="i585" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 2240px;">
+            <input type=text id="i586" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 2240px;">
+            <input type=text id="i587" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 2240px;">
+            <input type=text id="i588" style="width: 20px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 45px; top: 2270px;">
+            <input type=text id="i589" style="width: 120px;" value="0" list="umiejetnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2270px;">
+            <input type=checkbox id="i590" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 2270px;">
+            <input type=checkbox id="i591" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 2270px;">
+            <input type=checkbox id="i592" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 2270px;">
+            <input type=text id="i593" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 2270px;">
+            <input type=text id="i594" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 2270px;">
+            <input type=text id="i595" style="width: 20px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 45px; top: 2300px;">
+            <input type=text id="i596" style="width: 120px;" value="0" list="umiejetnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2300px;">
+            <input type=checkbox id="i597" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 2300px;">
+            <input type=checkbox id="i598" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 2300px;">
+            <input type=checkbox id="i599" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 2300px;">
+            <input type=text id="i600" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 2300px;">
+            <input type=text id="i601" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 2300px;">
+            <input type=text id="i602" style="width: 20px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 45px; top: 2330px;">
+            <input type=text id="i603" style="width: 120px;" value="0" list="umiejetnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2330px;">
+            <input type=checkbox id="i604" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 2330px;">
+            <input type=checkbox id="i605" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 2330px;">
+            <input type=checkbox id="i606" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 2330px;">
+            <input type=text id="i607" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 2330px;">
+            <input type=text id="i608" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 2330px;">
+            <input type=text id="i609" style="width: 20px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 45px; top: 2360px;">
+            <input type=text id="i610" style="width: 120px;" value="0" list="umiejetnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2360px;">
+            <input type=checkbox id="i611" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 2360px;">
+            <input type=checkbox id="i612" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 2360px;">
+            <input type=checkbox id="i613" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 2360px;">
+            <input type=text id="i614" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 2360px;">
+            <input type=text id="i615" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 2360px;">
+            <input type=text id="i616" style="width: 20px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 45px; top: 2390px;">
+            <input type=text id="i617" style="width: 120px;" value="0" list="umiejetnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2390px;">
+            <input type=checkbox id="i618" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 2390px;">
+            <input type=checkbox id="i619" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 2390px;">
+            <input type=checkbox id="i620" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 2390px;">
+            <input type=text id="i621" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 2390px;">
+            <input type=text id="i622" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 2390px;">
+            <input type=text id="i623" style="width: 20px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 45px; top: 2420px;">
+            <input type=text id="i624" style="width: 120px;" value="0" list="umiejetnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2420px;">
+            <input type=checkbox id="i625" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 2420px;">
+            <input type=checkbox id="i626" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 2420px;">
+            <input type=checkbox id="i627" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 2420px;">
+            <input type=text id="i628" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 2420px;">
+            <input type=text id="i629" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 2420px;">
+            <input type=text id="i630" style="width: 20px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 45px; top: 2450px;">
+            <input type=text id="i631" style="width: 120px;" value="0" list="umiejetnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2450px;">
+            <input type=checkbox id="i632" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 2450px;">
+            <input type=checkbox id="i633" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 2450px;">
+            <input type=checkbox id="i634" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 2450px;">
+            <input type=text id="i635" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 2450px;">
+            <input type=text id="i636" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 2450px;">
+            <input type=text id="i637" style="width: 20px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 45px; top: 2480px;">
+            <input type=text id="i638" style="width: 120px;" value="0" list="umiejetnosci"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2480px;">
+            <input type=checkbox id="i639" value=0></input>
+        </div>
+        <div style="position: absolute; left: 219px; top: 2480px;">
+            <input type=checkbox id="i640" value=0></input>
+        </div>
+        <div style="position: absolute; left: 250px; top: 2480px;">
+            <input type=checkbox id="i641" value=0></input>
+        </div>
+        <div style="position: absolute; left: 286px; top: 2480px;">
+            <input type=text id="i642" style="width: 40px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 336px; top: 2480px;">
+            <input type=text id="i643" style="width: 100px;" value="0" list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 450px; top: 2480px;">
+            <input type=text id="i644" style="width: 20px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 80px; top: 2570px;">
+            <input type=text id="i645" style="width: 160px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 285px; top: 2570px;">
+            <input type=text id="i646" style="width: 190px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 125px; top: 2625px;">
+            <input type=text id="i647" style="width: 30px;" value="WW"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2625px;">
+            <input type=text id="i648" style="width: 30px;" value="US"></input>
+        </div>
+        <div style="position: absolute; left: 210px; top: 2625px;">
+            <input type=text id="i649" style="width: 30px;" value="K"></input>
+        </div>
+        <div style="position: absolute; left: 255px; top: 2625px;">
+            <input type=text id="i650" style="width: 30px;" value="odp"></input>
+        </div>
+        <div style="position: absolute; left: 300px; top: 2625px;">
+            <input type=text id="i651" style="width: 30px;" value="zr"></input>
+        </div>
+        <div style="position: absolute; left: 340px; top: 2625px;">
+            <input type=text id="i652" style="width: 30px;" value="int"></input>
+        </div>
+        <div style="position: absolute; left: 390px; top: 2625px;">
+            <input type=text id="i653" style="width: 30px;" value="sw"></input>
+        </div>
+        <div style="position: absolute; left: 430px; top: 2625px;">
+            <input type=text id="i654" style="width: 30px;" value="ogd"></input>
+        </div>
+        <div style="position: absolute; left: 125px; top: 2670px;">
+            <input type=text id="i655" style="width: 30px;" value="a"></input>
+        </div>
+        <div style="position: absolute; left: 170px; top: 2670px;">
+            <input type=text id="i656" style="width: 30px;" value="zyw"></input>
+        </div>
+        <div style="position: absolute; left: 210px; top: 2670px;">
+            <input type=text id="i657" style="width: 30px;" value="s"></input>
+        </div>
+        <div style="position: absolute; left: 255px; top: 2670px;">
+            <input type=text id="i658" style="width: 30px;" value="wt"></input>
+        </div>
+        <div style="position: absolute; left: 300px; top: 2670px;">
+            <input type=text id="i659" style="width: 30px;" value="sz"></input>
+        </div>
+        <div style="position: absolute; left: 340px; top: 2670px;">
+            <input type=text id="i660" style="width: 30px;" value="mag"></input>
+        </div>
+        <div style="position: absolute; left: 390px; top: 2670px;">
+            <input type=text id="i661" style="width: 30px;" value="po"></input>
+        </div>
+        <div style="position: absolute; left: 430px; top: 2670px;">
+            <input type=text id="i662" style="width: 30px;" value="pp"></input>
+        </div>
+        <div style="position: absolute; left: 140px; top: 2700px;">
+            <input type=text id="i663" style="width: 200px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 375px; top: 2700px;">
+            <input type=text id="i664" style="width: 100px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 120px; top: 2720px;">
+            <input type=text id="i665" style="width: 230px;" value="0"></input>
+        </div>
+        <div style="position: absolute; left: 390px; top: 2720px;">
+            <input type=text id="i666" style="width: 80px;" value="0"></input>
+        </div>
+
+        <div style="position: absolute; left: 505px; top: 1480px;">
+            <input type=text id="i667" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1480px;">
+            <input type=text id="i668" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1500px;">
+            <input type=text id="i669" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1500px;">
+            <input type=text id="i670" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1521px;">
+            <input type=text id="i671" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1521px;">
+            <input type=text id="i672" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1542px;">
+            <input type=text id="i673" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1542px;">
+            <input type=text id="i674" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1563px;">
+            <input type=text id="i675" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1563px;">
+            <input type=text id="i676" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1584px;">
+            <input type=text id="i677" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1584px;">
+            <input type=text id="i678" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1605px;">
+            <input type=text id="i679" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1605px;">
+            <input type=text id="i680" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1628px;">
+            <input type=text id="i681" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1628px;">
+            <input type=text id="i682" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1649px;">
+            <input type=text id="i683" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1649px;">
+            <input type=text id="i684" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1672px;">
+            <input type=text id="i685" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1672px;">
+            <input type=text id="i686" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1692px;">
+            <input type=text id="i687" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1692px;">
+            <input type=text id="i688" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1715px;">
+            <input type=text id="i689" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1715px;">
+            <input type=text id="i690" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1737px;">
+            <input type=text id="i691" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1737px;">
+            <input type=text id="i692" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1758px;">
+            <input type=text id="i693" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1758px;">
+            <input type=text id="i694" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1779px;">
+            <input type=text id="i695" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1779px;">
+            <input type=text id="i696" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1802px;">
+            <input type=text id="i697" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1802px;">
+            <input type=text id="i698" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1822px;">
+            <input type=text id="i699" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1822px;">
+            <input type=text id="i700" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1844px;">
+            <input type=text id="i701" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1844px;">
+            <input type=text id="i702" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1866px;">
+            <input type=text id="i703" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1866px;">
+            <input type=text id="i704" style="width: 280px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 1888px;">
+            <input type=text id="i705" style="width: 150px;" value=0 list="zdolnosci"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 1888px;">
+            <input type=text id="i706" style="width: 280px;" value=0></input>
+        </div>
+
+        <div style="position: absolute; left: 505px; top: 2008px;">
+            <input type=text id="i707" style="width: 150px;" value=0 list="ekwipunek"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 2008px;">
+            <input type=text id="i708" style="width: 30px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 680px; top: 2008px;">
+            <input type=text id="i709" style="width: 250px; text-align:center;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 2038px;">
+            <input type=text id="i710" style="width: 150px;" value=0 list="ekwipunek"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 2038px;">
+            <input type=text id="i711" style="width: 30px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 680px; top: 2038px;">
+            <input type=text id="i712" style="width: 250px; text-align:center;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 2067px;">
+            <input type=text id="i713" style="width: 150px;" value=0 list="ekwipunek"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 2067px;">
+            <input type=text id="i714" style="width: 30px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 680px; top: 2067px;">
+            <input type=text id="i715" style="width: 250px; text-align:center;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 2097px;">
+            <input type=text id="i716" style="width: 150px;" value=0 list="ekwipunek"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 2097px;">
+            <input type=text id="i717" style="width: 30px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 680px; top: 2097px;">
+            <input type=text id="i718" style="width: 250px; text-align:center;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 2126px;">
+            <input type=text id="i719" style="width: 150px;" value=0 list="ekwipunek"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 2126px;">
+            <input type=text id="i720" style="width: 30px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 680px; top: 2126px;">
+            <input type=text id="i721" style="width: 250px; text-align:center;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 2155px;">
+            <input type=text id="i722" style="width: 150px;" value=0 list="ekwipunek"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 2155px;">
+            <input type=text id="i723" style="width: 30px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 680px; top: 2155px;">
+            <input type=text id="i724" style="width: 250px; text-align:center;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 2184px;">
+            <input type=text id="i725" style="width: 150px;" value=0 list="ekwipunek"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 2184px;">
+            <input type=text id="i726" style="width: 30px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 680px; top: 2184px;">
+            <input type=text id="i727" style="width: 250px; text-align:center;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 2213px;">
+            <input type=text id="i728" style="width: 150px;" value=0 list="ekwipunek"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 2213px;">
+            <input type=text id="i729" style="width: 30px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 680px; top: 2213px;">
+            <input type=text id="i730" style="width: 250px; text-align:center;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 2242px;">
+            <input type=text id="i731" style="width: 150px;" value=0 list="ekwipunek"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 2242px;">
+            <input type=text id="i732" style="width: 30px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 680px; top: 2242px;">
+            <input type=text id="i733" style="width: 250px; text-align:center;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 2271px;">
+            <input type=text id="i734" style="width: 150px;" value=0 list="ekwipunek"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 2271px;">
+            <input type=text id="i735" style="width: 30px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 680px; top: 2271px;">
+            <input type=text id="i736" style="width: 250px; text-align:center;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 2300px;">
+            <input type=text id="i737" style="width: 150px;" value=0 list="ekwipunek"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 2300px;">
+            <input type=text id="i738" style="width: 30px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 680px; top: 2300px;">
+            <input type=text id="i739" style="width: 250px; text-align:center;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 2329px;">
+            <input type=text id="i740" style="width: 150px;" value=0 list="ekwipunek"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 2329px;">
+            <input type=text id="i741" style="width: 30px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 680px; top: 2329px;">
+            <input type=text id="i742" style="width: 250px; text-align:center;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 2358px;">
+            <input type=text id="i743" style="width: 150px;" value=0 list="ekwipunek"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 2358px;">
+            <input type=text id="i744" style="width: 30px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 680px; top: 2358px;">
+            <input type=text id="i745" style="width: 250px; text-align:center;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 2387px;">
+            <input type=text id="i746" style="width: 150px;" value=0 list="ekwipunek"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 2387px;">
+            <input type=text id="i747" style="width: 30px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 680px; top: 2387px;">
+            <input type=text id="i748" style="width: 250px; text-align:center;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 505px; top: 2405px;">
+            <input type=text id="i749" style="width: 150px;" value=0 list="ekwipunek"></input>
+        </div>
+        <div style="position: absolute; left: 648px; top: 2405px;">
+            <input type=text id="i750" style="width: 30px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 680px; top: 2405px;">
+            <input type=text id="i751" style="width: 250px; text-align:center;" value=0></input>
+        </div>
+
+        <div style="position: absolute; left: 660px; top: 2425px;">
+            <input type=text id="i752" style="width: 40px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 660px; top: 2450px;">
+            <input type=text id="i753" style="width: 40px;" value=0></input>
+        </div>
+
+        <div style="position: absolute; left: 670px; top: 2530px;">
+            <input type=text id="i754" style="width: 240px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 670px; top: 2570px;">
+            <input type=text id="i755" style="width: 240px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 670px; top: 2605px;">
+            <input type=text id="i756" style="width: 240px;" value=0></input>
+        </div>
+
+        <div style="position: absolute; left: 505px; top: 2725px;">
+            <input type=text id="i757" style="width: 190px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 710px; top: 2725px;">
+            <input type=text id="i758" style="width: 180px;" value=0></input>
+        </div>
+    </div>
+     <datalist id="umiejetnosci">
+        <option value="Brzuchmówstwo"></option>
+        <option value="Czytanie i pisanie"></option>
+        <option value="Czytanie z warg"></option>
+        <option value="Gadanina"></option>
+        <option value="Hipnoza"></option>
+        <option value="j. tajemny"></option>
+        <option value="Kuglarstwo"></option>
+        <option value="Leczenie"></option>
+        <option value="Nauka"></option>
+        <option value="Nawigacja"></option>
+        <option value="Oswajanie"></option>
+        <option value="Otwieranie zamków"></option>
+        <option value="Rzemiosło"></option>
+        <option value="Sekretne znaki"></option>
+        <option value="Sekretny j."></option>
+        <option value="Splatanie magii"></option>
+        <option value="Śledzenie"></option>
+        <option value="Torturowanie"></option>
+        <option value="Tresura"></option>
+        <option value="Tropienie"></option>
+        <option value="Unik"></option>
+        <option value="Warzenie trucizn"></option>
+        <option value="Wiedza"></option>
+        <option value="Wykrywanie magii"></option>
+        <option value="Zastawianie pułapek"></option>
+        <option value="Znajomoś j."></option>
+        <option value="Zwinne palce"></option>
+        <option value="Żeglarstwo"></option>
+    </datalist>
+    <datalist id="zdolnosci">
+        <option value="Artylerzysta"></option>
+        <option value="Bardzo silny"></option>
+        <option value="Bardzo szybki"></option>
+        <option value="Bijatyka"></option>
+        <option value="Błyskawiczne przeładowanie"></option>
+        <option value="Błyskawiczny blok"></option>
+        <option value="Błyskotliwość"></option>
+        <option value="Brawura"></option>
+        <option value="Broń naturalna"></option>
+        <option value="Broń specjalna"></option>
+        <option value="Bystry wzrok"></option>
+        <option value="Charyzmatyczny"></option>
+        <option value="Chirurgia"></option>
+        <option value="Chodu!"></option>
+        <option value="Czarnosięstwo"></option>
+        <option value="Człowiek-guma"></option>
+        <option value="Czuły słuch"></option>
+        <option value="Dotyk mocy"></option>
+        <option value="Etykieta"></option>
+        <option value="Geniusz arytmetyczny"></option>
+        <option value="Grotołaz"></option>
+        <option value="Groźny"></option>
+        <option value="Gusła"></option>
+        <option value="Intrygant"></option>
+        <option value="Krasnoludzki fach"></option>
+        <option value="Krasomówstwo"></option>
+        <option value="Krzepki"></option>
+        <option value="Latanie"></option>
+        <option value="Lewitacja"></option>
+        <option value="Łotrzyk"></option>
+        <option value="Magia czarnoksięska"></option>
+        <option value="Magia kapłańska"></option>
+        <option value="Magia powszechna"></option>
+        <option value="Magia prosta"></option>
+        <option value="Magia tajemna"></option>
+        <option value="Medytacja"></option>
+        <option value="Morderczy atak"></option>
+        <option value="Morderczy pocisk"></option>
+        <option value="Naśladowca"></option>
+        <option value="Niepokojący"></option>
+        <option value="Nieustraszony"></option>
+        <option value="Niezwykle odporny"></option>
+        <option value="Obieżyświat"></option>
+        <option value="Oburęczność"></option>
+        <option value="Odporność na chaos"></option>
+        <option value="Odporność na choroby"></option>
+        <option value="Odporność na magię"></option>
+        <option value="Odporność na trucizny"></option>
+        <option value="Odporność psychiczna"></option>
+        <option value="Odwaga"></option>
+        <option value="Ogłuszanie"></option>
+        <option value="Opanowanie"></option>
+        <option value="Ożywieniec"></option>
+        <option value="Pancerz wiary"></option>
+        <option value="Poliglota"></option>
+        <option value="Przemawianie"></option>
+        <option value="Przerażający"></option>
+        <option value="Rozbrajanie"></option>
+        <option value="Silny cios"></option>
+        <option value="Straszny"></option>
+        <option value="Strzał mierzony"></option>
+        <option value="Strzał precyzyjny"></option>
+        <option value="Strzał przebijający"></option>
+        <option value="Strzelec wyborowy"></option>
+        <option value="Szał bojowy"></option>
+        <option value="Szczęście"></option>
+        <option value="Szósty zmysł"></option>
+        <option value="Szybki refleks"></option>
+        <option value="Szybkie wyciągnięcie"></option>
+        <option value="Talent artystyczny"></option>
+        <option value="Twardziel"></option>
+        <option value="Ulicznik"></option>
+        <option value="Urodzony wojownik"></option>
+        <option value="Wędrowiec"></option>
+        <option value="Widzenie w ciemności"></option>
+        <option value="Woltyżerka"></option>
+        <option value="Wyczucie kierunku"></option>
+        <option value="Wykrywanie pułapek"></option>
+        <option value="Wyostrzone zmysły"></option>
+        <option value="Zapasy"></option>
+        <option value="Zapiekła nienawiść"></option>
+        <option value="Zmysł magii"></option>
+        <option value="Żyłka chandlowa"></option>
+    </datalist>
+    <datalist id="ekwipunek">
+        <option value="Topór dwu ręczny"></option>
+        <option value="Młot bojowy"></option>
+        <option value="Sztylet"></option>
+        <option value="Nóż"></option>
+        <option value="Pałka"></option>
+        <option value="Krótki miecz"></option>
+        <option value="Korbacz"></option>
+        <option value="Miecz dwu ręczny"></option>
+        <option value="Halabarda"></option>
+        <option value="Kij"></option>
+        <option value="Kopia"></option>
+        <option value="Lanca"></option>
+        <option value="Lewak"></option>
+        <option value="Łamacz mieczy"></option>
+        <option value="Morgensztern"></option>
+        <option value="Puklerz"></option>
+        <option value="Rapier"></option>
+        <option value="Rękawica"></option>
+        <option value="Kastet"></option>
+        <option value="Szpada"></option>
+        <option value="Tarcza"></option>
+        <option value="Włócznia"></option>
+        <option value="Arkan"></option>
+        <option value="Bicz"></option>
+        <option value="Bolas"></option>
+        <option value="Długi łuk"></option>
+        <option value="Elfi łuk"></option>
+        <option value="Garłacz"></option>
+        <option value="Krótki łuk"></option>
+        <option value="Kusza pistoletowa"></option>
+        <option value="Kusza samopowtarzalna"></option>
+        <option value="Kusza"></option>
+        <option value="Łuk"></option>
+        <option value="Muszkiet hochlandzki"></option>
+        <option value="Gwiazdka do rzucania"></option>
+        <option value="Oszczep"></option>
+        <option value="Pistolet"></option>
+        <option value="Pistolet wielostrzałowy"></option>
+        <option value="Proca"></option>
+        <option value="Proca drzewcowa"></option>
+        <option value="Rusznica"></option>
+        <option value="Sieć"></option>
+        <option value="Rusznica wielostrzałowa"></option>
+        <option value="Topór do rzucania"></option>
+        <option value="Włucznia"></option>
+
+        <option value="Skórznia"></option>
+        <option value="Bransolety"></option>
+        <option value="Kirys"></option>
+        <option value="Tarcza"></option>
+        <option value="Skórzany hełm"></option>
+        <option value="Skórzane nogawice"></option>
+        <option value="Skórzana kurta"></option>
+        <option value="Skórzany kaftan"></option>
+        <option value="Kolczy czepiec"></option>
+        <option value="Kolcze nogawice"></option>
+        <option value="Kolcza koszula"></option>
+        <option value="Kolczy kaftan"></option>
+        <option value="Kolczuga"></option>
+        <option value="Zbroja kolcza"></option>
+        <option value="Hełm"></option>
+        <option value="Naramienniki płytowe"></option>
+        <option value="Nogawice płytowe"></option>
+        <option value="Napierśnik"></option>
+        <option value="Zbroja płytowa"></option>
+
+
+    </datalist>
+    <div style="position: absolute; left: 70px; top: 2800px;">
+            <label><input type=checkbox id="i759" value=0 ></input> JeStĘ mAgIę</label>
+        </div>
+    <div id="s3" >
+        <div style="position: absolute; left: 60px; top: 2885px;">
+            <input type=text id="i760" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 2925px;">
+            <input type=text id="i761" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 290px; top: 2925px;">
+            <input type=text id="i762" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 2965px;">
+            <input type=text id="i763" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3000px;">
+            <input type=text id="i764" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3040px;">
+            <input type=text id="i765" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3080px;">
+            <input type=text id="i766" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 290px; top: 3080px;">
+            <input type=text id="i767" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3120px;">
+            <input type=text id="i768" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3155px;">
+            <input type=text id="i769" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3195px;">
+            <input type=text id="i770" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3235px;">
+            <input type=text id="i771" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 290px; top: 3235px;">
+            <input type=text id="i772" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3275px;">
+            <input type=text id="i773" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3310px;">
+            <input type=text id="i774" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3350px;">
+            <input type=text id="i775" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3390px;">
+            <input type=text id="i776" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 290px; top: 3390px;">
+            <input type=text id="i777" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3430px;">
+            <input type=text id="i778" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3465px;">
+            <input type=text id="i779" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3505px;">
+            <input type=text id="i780" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3545px;">
+            <input type=text id="i781" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 290px; top: 3545px;">
+            <input type=text id="i782" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3585px;">
+            <input type=text id="i783" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3620px;">
+            <input type=text id="i784" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3660px;">
+            <input type=text id="i785" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3700px;">
+            <input type=text id="i786" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 290px; top: 3700px;">
+            <input type=text id="i787" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3740px;">
+            <input type=text id="i788" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3770px;">
+            <input type=text id="i789" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3815px;">
+            <input type=text id="i790" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3855px;">
+            <input type=text id="i791" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 290px; top: 3855px;">
+            <input type=text id="i792" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3890px;">
+            <input type=text id="i793" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3925px;">
+            <input type=text id="i794" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 3965px;">
+            <input type=text id="i795" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 4005px;">
+            <input type=text id="i796" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 290px; top: 4005px;">
+            <input type=text id="i797" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 4045px;">
+            <input type=text id="i798" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 60px; top: 4075px;">
+            <input type=text id="i799" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 2885px;">
+            <input type=text id="i800" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 2925px;">
+            <input type=text id="i801" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 740px; top: 2925px;">
+            <input type=text id="i802" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 2965px;">
+            <input type=text id="i803" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3000px;">
+            <input type=text id="i804" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3040px;">
+            <input type=text id="i805" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3080px;">
+            <input type=text id="i806" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 740px; top: 3080px;">
+            <input type=text id="i807" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3120px;">
+            <input type=text id="i808" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3155px;">
+            <input type=text id="i809" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3195px;">
+            <input type=text id="i810" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3235px;">
+            <input type=text id="i811" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 740px; top: 3235px;">
+            <input type=text id="i812" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3275px;">
+            <input type=text id="i813" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3310px;">
+            <input type=text id="i814" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3350px;">
+            <input type=text id="i815" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3390px;">
+            <input type=text id="i816" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 740px; top: 3390px;">
+            <input type=text id="i817" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3430px;">
+            <input type=text id="i818" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3465px;">
+            <input type=text id="i819" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3505px;">
+            <input type=text id="i820" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3545px;">
+            <input type=text id="i821" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 740px; top: 3545px;">
+            <input type=text id="i822" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3585px;">
+            <input type=text id="i823" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3620px;">
+            <input type=text id="i824" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3660px;">
+            <input type=text id="i825" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3700px;">
+            <input type=text id="i826" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 740px; top: 3700px;">
+            <input type=text id="i827" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3740px;">
+            <input type=text id="i828" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3770px;">
+            <input type=text id="i829" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3815px;">
+            <input type=text id="i830" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3855px;">
+            <input type=text id="i831" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 740px; top: 3855px;">
+            <input type=text id="i832" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3890px;">
+            <input type=text id="i833" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3925px;">
+            <input type=text id="i834" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 3965px;">
+            <input type=text id="i835" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 4005px;">
+            <input type=text id="i836" style="width: 220px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 740px; top: 4005px;">
+            <input type=text id="i837" style="width: 180px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 4045px;">
+            <input type=text id="i838" style="width: 400px;" value=0></input>
+        </div>
+        <div style="position: absolute; left: 510px; top: 4075px;">
+            <input type=text id="i839" style="width: 400px;" value=0></input>
+        </div>
+    </div>
+    </form>
+    <script>
+        var n=839;
+        //alert(navigator.onLine);
+        function SetCheckbox()
+        {
+            $("input:checkbox").each(function( index )
+            {
+                //alert(parseInt($(this).val())==1);
+                if(parseInt($(this).val())==1)
+                {
+                    $(this).prop('checked', true);
+                }
+                else
+                {
+                    $(this).prop('checked', false);
+                }
+            });
+        }
+        function SetProgres(li)
+        {
+            if($("#loadprogress").val()<100)
+            $("#loadprogress").val($("#loadprogress").val()+li);
+            if($("#loadprogress").val()>=100)
+            setTimeout(function(){$("#loadprogress").hide();}, 3000);
+        }
+        function GetLocalStats()
+        {
+            if(typeof(Storage) !== "undefined") {
+                // Code for localStorage/sessionStorage.
+            } else {
+                // Sorry! No Web Storage support..
+                alert("Sorry! No Web Storage support..");
+            }
+            var tmp=25/n;
+            for(var i=1;i<=n;i++)
+            {
+                var ix=localStorage.getItem(String("i"+i));
+                $(String("#i"+i)).val(ix);
+                SetProgres(tmp);
+            }
+        }
+        function SetLocalStats()
+        {
+            for(var i=1;i<=n;i++)
+            {
+                localStorage.setItem(String("i"+i),$(String("#i"+i)).val());
+            }
+        }
+        function GetImmage()
+        {
+            $("#myimmage").attr('src',String($("#i459").val()));
+        }
+var NewBlob = function(data, datatype)
+{
+    var out;
+
+    try {
+        out = new Blob([data], {type: datatype});
+        console.debug("case 1");
+    }
+    catch (e) {
+        window.BlobBuilder = window.BlobBuilder ||
+                window.WebKitBlobBuilder ||
+                window.MozBlobBuilder ||
+                window.MSBlobBuilder;
+
+        if (e.name == 'TypeError' && window.BlobBuilder) {
+            var bb = new BlobBuilder();
+            bb.append(data);
+            out = bb.getBlob(datatype);
+            console.debug("case 2");
+        }
+        else if (e.name == "InvalidStateError") {
+            // InvalidStateError (tested on FF13 WinXP)
+            out = new Blob([data], {type: datatype});
+            console.debug("case 3");
+        }
+        else {
+            // We're screwed, blob constructor unsupported entirely
+            console.debug("Errore");
+        }
+    }
+    return out;
+}
+function ArrayToURL(array) {
+  var pairs = [];
+  for (var key in array)
+    if (array.hasOwnProperty(key))
+      pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(array[key]));
+  return pairs.join('&');
+}
+function URLToArray(url) {
+  var request = {};
+  var pairs = url.substring(url.indexOf('?') + 1).split('&');
+  for (var i = 0; i < pairs.length; i++) {
+    var pair = pairs[i].split('=');
+    request[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+  }
+  return request;
+}
+        function SaveToFile()
+        {
+            var myarray=new Array();
+            for(var i=1;i<=n;i++)
+            {
+                myarray[String("i"+i)]=$(String("#i"+i)).val();
+            }
+            var uri=ArrayToURL(myarray);
+            window.open('data:text/csv;charset=utf-8,' + encodeURIComponent(uri));
+            //Dropbox.save('data:text/csv;charset=utf-8,' + encodeURIComponent(uri), $("#i1").val()+".txt");
+            //var myblob=NewBlob(myarray,"text/plain;charset=utf-8");
+            //saveAs(myblob,"karta_eksport.txt");
+        }
+        function browserSupportFileUpload()
+        {
+            var isCompatible = false;
+            if (window.File && window.FileReader && window.FileList && window.Blob)
+            {
+                isCompatible = true;
+            }
+            return isCompatible;
+        }
+        function OpenFile(selector)
+        {
+            if (!browserSupportFileUpload())
+            {
+                alert('The File APIs are not fully supported in this browser!');
+            }
+            var data = null;
+            if(!selector)
+            var selector="#upload_input";
+            var file = $(String(selector))[0].files[0];
+            var reader = new FileReader();
+            reader.readAsText(file);
+            reader.onload = function(event) {
+                var csvData = event.target.result;
+                data = URLToArray(csvData);
+                //alert(JSON.stringify(data));
+                for(var i=1;i<=n;i++)
+                {
+                    $(String("#i"+i)).val(data[String("i"+i)]);
+                }
+                SetCheckbox();
+                GetImmage();
+            };
+        }
+    function createDownloadLink(anchorSelector, str, fileName){
+        if(window.navigator.msSaveOrOpenBlob) {
+            var fileData = [str];
+            blobObject = new Blob(fileData);
+            $(anchorSelector).click(function(){
+                window.navigator.msSaveOrOpenBlob(blobObject, fileName);
+            });
+        } else {
+            var url = "data:text/plain;charset=utf-8," + encodeURIComponent(str);
+            $(anchorSelector).attr("download", fileName);
+            $(anchorSelector).attr("href", url);
+        }
+    }
+function readDropbox(sURL)
+{
+    var oRequest = new XMLHttpRequest();
+    oRequest.open("GET",sURL,false);
+    oRequest.onreadystatechange = function(oEvent)
+    {
+        if (oRequest.readyState === 4)
+        {
+            if (oRequest.status === 200)
+            {
+                console.log(oRequest.responseText)
+            }
+            else
+            {
+                console.log("Error", oRequest.statusText);
+            }
+        }
+    }
+    oRequest.setRequestHeader("User-Agent",navigator.userAgent);
+    try
+    {
+        oRequest.send(null)
+    }
+    catch (err)
+    {
+        alert(err);
+    }
+    if (oRequest.status == 200)
+    {
+        return oRequest.responseText;
+    }
+    else
+    {
+        alert("Error - File not found in Dropbox public folder");
+        return null;
+    }
+}
+        function CreateChooser()
+        {
+            options = {
+            // Required. Called when a user selects an item in the Chooser.
+            success: function(files)
+            {
+                //alert("Here's the file link: " + files[0].link);
+                var csvData=readDropbox(files[0].link);
+                data = URLToArray(csvData);
+                for(var i=1;i<=n;i++)
+                {
+                    $(String("#i"+i)).val(data[String("i"+i)]);
+                }
+                SetCheckbox();
+                GetImmage();
+            },
+            // Optional. "preview" (default) is a preview link to the document for sharing,
+            // "direct" is an expiring link to download the contents of the file. For more
+            // information about link types, see Link types below.
+            linkType: "direct", // or "direct"
+            // Optional. A value of false (default) limits selection to a single file, while
+            // true enables multiple file selection.
+            multiselect: false, // or true
+            };
+            var button = Dropbox.createChooseButton(options);
+            document.getElementById("ChooseFromDropbox").appendChild(button);
+        }
+        function SetS3()
+        {
+            var cb=$("#i759");
+            var s3=$("#s3");
+            if(cb.val()==0)
+            {
+                s3.hide();
+            }
+            else
+            {
+                s3.show();
+            }
+        }
+        SetProgres(4);
+////////////////////////////////////////////////////////////////////////////////////////////
+//  Document Ready
+////////////////////////////////////////////////////////////////////////////////////////////
+        $( document ).ready(function()
+        {
+            GetLocalStats();
+            SetCheckbox();
+            GetImmage();
+            CreateChooser();
+            SetS3();
+            SetProgres(10);
+            $("#myimmage").click(function()
+            {
+                var retVal = prompt('podaj adres aobrazka : ', 'link');
+                $('#myimmage').attr('src',String(retVal));
+                $("#i459").val(String(retVal));
+                SetLocalStats();
+            });
+            $("input").change(function()
+            {
+                //alert("change");
+                if($(this).is(':checkbox'))
+                {
+                    //alert("checkbox");
+                    if($(this).prop('checked'))
+                    $(this).val(1)
+                    else
+                    $(this).val(0);
+                }
+                if($(this).is('#i3'))
+                {
+                    var i3=$(this);
+                    var i4=$("#i4");
+                    var i5=$("#i5");
+                    $("#profesje option").each(function(index)
+                    {
+                        if(i3.val()==$(this).val() && $(this).attr("data-profesjewyjsciowe"))
+                        {
+                            i5.val($(this).attr("data-profesjewyjsciowe"));
+                        }
+                    });
+                }
+                if($(this).is('#i759'))
+                {
+                    if($(this).val()==1)
+                    {
+                        $("#s3").show();
+                    }
+                    else
+                    {
+                        $("#s3").hide();
+                    }
+                }
+                //tu ida wszystkie funkcje wiazace ze soba wartosci pol
+                SetLocalStats();
+            });
+            $("#zapisz").click(function()
+            {
+                //alert("#zapisz");
+                SetLocalStats();
+            });
+            $("#eksport").click(function()
+            {
+                SaveToFile();
+            });
+            $("#SaveToDropbox").click(function(event)
+            {
+                event.preventDefault();
+                var myarray=new Array();
+                for(var i=1;i<=n;i++)
+                {
+                    myarray[String("i"+i)]=$(String("#i"+i)).val();
+                }
+                var uri=ArrayToURL(myarray);
+                //$("#SaveToDropbox").prop("href",'data:text/csv;charset=utf-8,' + encodeURIComponent(uri));
+                Dropbox.save('data:text/csv;charset=utf-8,' + encodeURIComponent(uri), $("#i1").val()+".txt");
+            });
+            $("#upload_input").change(function()
+            {
+                OpenFile();
+            });
+            var drop=true;
+            if(!(navigator.onLine))
+            {
+                //alert("offline");
+                drop=false;
+                $("#status").append("offline ");
+                SetProgres(50);
+            }
+            var myurl=document.URL
+            if(myurl.search("file:")>-1)
+            {
+                //alert("file:");
+                drop=false;
+                $("#status").append("file ");
+                SetProgres(50);
+            }
+            if(drop){
+            var client = new Dropbox.Client({key: "yz2ozbqwxlxd3lz"});
+            // Try to finish OAuth authorization.
+            client.authenticate({interactive: false}, function (error)
+            {
+                if (error)
+                {
+                    alert("authenticate error: "+error);
+                }
+            });
+            client.authenticate();
+            SetProgres(10);
+            var datastoreManager = client.getDatastoreManager();
+            datastoreManager.openDefaultDatastore(function (error, datastore)
+            {
+                if (error)
+                {
+                    alert('Error opening default datastore: ' + error);
+                    return;
+                }
+                $("#status").append("dropbox ");
+                SetProgres(10);
+                var statsTable = datastore.getTable('stats');
+                var n2=datastore.getRecordCount();
+                SetProgres(10);
+                //alert(n2);
+                if(n2<=1)
+                var stats = statsTable.insert({i1: $(String("#i1")).val()});
+                var results = statsTable.query();
+                SetProgres(10);
+                $("#i0").click(function()
+                {
+                    for(var i=1;i<=n;i++)
+                    {
+                        //alert(results[0].get(String("i"+String(i))));
+                        var mytmp=results[0].get(String("i"+String(i)));
+                        if(mytmp!="undefined")
+                        $(String("#i"+i)).val(mytmp);
+                        else
+                        $(String("#i"+i)).val("");
+                    }
+                    GetImmage();
+                    SetCheckbox();
+                });
+                $("#wyloguj").click(function()
+                {
+                    client.reset();
+                    client.signOut();
+                });
+                $("input").on("blur",function()
+                {
+                    //alert("ok");
+                    for(var i=1;i<=n;i++)
+                    {
+                        if($(String("#i"+i)).val()=="undefined" || $(String("#i"+i)).val()=="")
+                        results[0].set(String("i"+i), null);
+                        else
+                        results[0].set(String("i"+i), $(String("#i"+i)).val());
+                    }
+                    //alert(String(statsTable.getSize()));
+                });
+                SetProgres(10);
+            });
+        }
+        SetProgres(15);
+        });
+    </script>
+</body>
+</html>
